@@ -92,4 +92,39 @@ function JobSeekerDashboard({ user }) {
         </div>
       ))}
 
+      {/* 🔹 Apply form (UNCHANGED logic) */}
+      {selectedJob && (
+        <form
+          onSubmit={applyJob}
+          style={{ marginTop: "20px", border: "1px solid #000", padding: "10px" }}
+        >
+          <h3>Apply for {selectedJob.title}</h3>
+          <p>Company: {getCompanyName(selectedJob.companyId)}</p>
+
+          <label>Name</label>
+          <input name="name" defaultValue={user.name} required />
+
+          <label>Email</label>
+          <input name="email" defaultValue={user.email} required />
+
+          <label>Cover Letter</label>
+          <textarea
+            name="coverLetter"
+            placeholder="Type your cover letter here..."
+            required
+          />
+
+          <label>Upload CV</label>
+          <input type="file" name="cv" required />
+
+          <button type="submit">Submit Application</button>
+        </form>
+      )}
+    </div>
+  )
+}
+
+export default JobSeekerDashboard
+
+
 
