@@ -37,3 +37,17 @@ function JobSeekerDashboard({ user }) {
     alert("Application submitted")
     setSelectedJob(null)
   }
+
+
+  // 🔹 NEW: filter + search + sort logic
+  const filteredJobs = jobs
+    .filter(job =>
+      job.title.toLowerCase().includes(search.toLowerCase())
+    )
+    .filter(job =>
+      jobType ? job.type === jobType : true
+    )
+    .sort((a, b) =>
+      sort === "latest" ? b.id - a.id : a.id - b.id
+    )
+
