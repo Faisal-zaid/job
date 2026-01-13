@@ -71,3 +71,25 @@ function JobSeekerDashboard({ user }) {
           <option value="physical">Physical</option>
         </select>
 
+         <select value={sort} onChange={e => setSort(e.target.value)}>
+          <option value="latest">Latest</option>
+          <option value="oldest">Oldest</option>
+        </select>
+      </div>
+
+      {/* 🔹 Jobs list */}
+      {filteredJobs.map((job, index) => (
+        <div
+          key={index}
+          style={{ border: "1px solid #ccc", margin: "10px", padding: "10px" }}
+        >
+          <h3>{job.title}</h3>
+          <p>{job.description}</p>
+          <p>Type: {job.type}</p>
+          <p>Education: {job.education}</p>
+          <p>Company: {getCompanyName(job.companyId)}</p>
+          <button onClick={() => setSelectedJob(job)}>Apply</button>
+        </div>
+      ))}
+
+
