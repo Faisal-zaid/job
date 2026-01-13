@@ -51,3 +51,23 @@ function JobSeekerDashboard({ user }) {
       sort === "latest" ? b.id - a.id : a.id - b.id
     )
 
+
+  return (
+    <div>
+      <h2>Available Jobs</h2>
+
+      {/* 🔹 NEW: Controls */}
+      <div style={{ marginBottom: "15px" }}>
+        <input
+          placeholder="Search job title..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+
+        <select value={jobType} onChange={e => setJobType(e.target.value)}>
+          <option value="">All Types</option>
+          <option value="remote">Remote</option>
+          <option value="hybrid">Hybrid</option>
+          <option value="physical">Physical</option>
+        </select>
+
