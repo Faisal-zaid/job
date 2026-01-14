@@ -1,18 +1,15 @@
-import { Link } from "react-router-dom";
+import React from "react";
+import About from "../components/About";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 function Home() {
   return (
     <div>
-      <h1>JobConnect</h1>
-      <p>Find jobs or hire talent easily.</p>
-
-      <Link to="/jobs">
-        <button>Browse Jobs</button>
-      </Link>
-
-      <Link to="/register">
-        <button>Get Started</button>
-      </Link>
+     
+      <Header />
+      <About />
+      <Footer />
     </div>
   );
 }
