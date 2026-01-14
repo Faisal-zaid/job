@@ -1,18 +1,16 @@
-import { Link } from "react-router-dom";
+import React from "react";
+import About from "../components/About";
+import Header from "../components/Header";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 function Home() {
   return (
-    <div>
-      <h1>JobConnect</h1>
-      <p>Find jobs or hire talent easily.</p>
-
-      <Link to="/jobs">
-        <button>Browse Jobs</button>
-      </Link>
-
-      <Link to="/register">
-        <button>Get Started</button>
-      </Link>
+    <div style={{ margin: 0, padding: 0, width: "100%" }}>
+      <Navbar />
+      <Header />
+      <About />
+      <Footer />
     </div>
   );
 }
