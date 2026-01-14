@@ -77,6 +77,7 @@ const Footer = () => {
               </ul>
             </div>
 
+
             <div>
               <h3 className="text-white text-xs font-black uppercase tracking-[0.3em] mb-8 italic">
                 Legal
@@ -113,8 +114,6 @@ const Footer = () => {
           </div>
         </div>
       </div>
-
-
 
       {/* BIG BACKGROUND TEXT DECORATION */}
       <div className="absolute bottom-0 right-0 translate-y-1/2 translate-x-1/4 select-none pointer-events-none">
