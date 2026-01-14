@@ -114,6 +114,8 @@ const Footer = () => {
         </div>
       </div>
 
+
+
       {/* BIG BACKGROUND TEXT DECORATION */}
       <div className="absolute bottom-0 right-0 translate-y-1/2 translate-x-1/4 select-none pointer-events-none">
         <h2 className="text-[200px] font-black text-white/[0.02] leading-none uppercase italic tracking-tighter">
