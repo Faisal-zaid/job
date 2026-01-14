@@ -159,6 +159,7 @@ function EmployerDashboard() {
           Applications
         </button>
       </div>
+      
 
       {view === "jobs" && (
         <>
@@ -210,6 +211,8 @@ function EmployerDashboard() {
               Post Job Listing
             </button>
           </form>
+
+
 
           <h3 style={{ color: "#2c3e50" }}>Your Active Listings</h3>
           {jobs
