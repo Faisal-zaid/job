@@ -8,7 +8,7 @@ import EmployerDashboard from "./pages/EmployerDashboard";
 function App() {
   return (
    <>
-     <Home/>
+     <EmployerDashboard/>
    </>
    );
 }
