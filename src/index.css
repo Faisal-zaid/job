@@ -5,3 +5,11 @@
       --color-primary: #ff0000;
       --font-family-sans: Inter, sans-serif;
     }
+    
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden; /* Prevents unwanted horizontal scrolling */
+}

@@ -20,19 +20,19 @@ const Footer = () => {
           <div className="w-full lg:w-1/3">
             <div className="flex items-center gap-4 mb-8">
               <img
-                src="/logo.jpg"
+                src="/logo.png"
                 alt="WritersHub Logo"
                 className="w-14 h-14 rounded-2xl object-cover grayscale hover:grayscale-0 transition-all duration-500"
               />
               <span className="text-2xl font-black text-white uppercase italic tracking-tighter">
-                Writers<span className="text-indigo-500">Hub</span>
+                Jobs<span className="text-indigo-500">Connect</span>
               </span>
             </div>
 
             <p className="text-slate-400 font-medium leading-relaxed max-w-sm mb-10">
-              The premier platform for elite writers and professional
-              translators. We bridge the gap between global talent and
-              industry-leading projects.
+              A premier platform for job seekers and skilled professionals. We
+              bridge the gap between global talent and industry-leading
+              opportunities.
             </p>
 
             {/* SOCIALS */}
@@ -77,7 +77,6 @@ const Footer = () => {
               </ul>
             </div>
 
-
             <div>
               <h3 className="text-white text-xs font-black uppercase tracking-[0.3em] mb-8 italic">
                 Legal
@@ -102,16 +101,8 @@ const Footer = () => {
         {/* BOTTOM BAR */}
         <div className="mt-24 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest italic">
-            &copy; {currentYear} WritersHub • Engineered for Creators
+            &copy; {currentYear} JobsConnect • Engineered for Job Seekers
           </p>
-          <div className="flex gap-8">
-            <span className="text-slate-600 text-[10px] font-black uppercase tracking-[0.2em]">
-              Status: Systems Online
-            </span>
-            <span className="text-slate-600 text-[10px] font-black uppercase tracking-[0.2em]">
-              Version 2.0.4
-            </span>
-          </div>
         </div>
       </div>
 

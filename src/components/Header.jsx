@@ -5,7 +5,7 @@ function Header() {
   return (
     <>
       {/* HERO SECTION */}
-      <div className="relative bg-[url('/Home.jpg')] bg-cover bg-center h-screen w-full flex flex-col items-center justify-center text-center px-6 overflow-hidden">
+      <div className="relative bg-[url('/Home1.jpg')] bg-cover bg-center h-screen w-full flex flex-col items-center justify-center text-center px-6 overflow-hidden">
         {/* Darker overlay for better text readability */}
         <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]" />
 
@@ -17,7 +17,7 @@ function Header() {
             className="text-5xl sm:text-7xl md:text-[92px] font-black text-white leading-[0.9] tracking-tighter italic uppercase">
             Find Your Next <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-300">
-              Writing Project
+              LANDING JOB
             </span>
           </motion.h1>
 
@@ -26,8 +26,9 @@ function Header() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.8 }}
             className="text-slate-200 text-lg md:text-xl font-medium mt-8 max-w-2xl mx-auto drop-shadow-md">
-            Join thousands of professional writers and translators worldwide.
-            Define your terms, own your time, and maximize your earnings.
+            Join thousands of job seekers and professionals worldwide. Discover
+            verified opportunities, define your career path, work on your own
+            terms, and maximize your earning potential.
           </motion.p>
 
           <motion.div
@@ -38,12 +39,12 @@ function Header() {
             <a
               href="#"
               className="bg-white text-slate-900 px-10 py-4 rounded-2xl font-black uppercase text-sm tracking-widest hover:bg-indigo-500 hover:text-white transition-all shadow-2xl">
-              Start Writing
+              JOIN US
             </a>
             <a
               href="#"
               className="bg-slate-900/40 backdrop-blur-md border border-white/30 text-white px-10 py-4 rounded-2xl font-black uppercase text-sm tracking-widest hover:bg-white/20 transition-all">
-              Hire Writers
+              POST JOBS
             </a>
           </motion.div>
         </div>
@@ -74,7 +75,7 @@ function Header() {
           <div className="relative group w-full lg:w-1/2">
             <div className="absolute -inset-4 bg-indigo-100 rounded-[100px] rotate-3 group-hover:rotate-0 transition-transform duration-500" />
             <img
-              src={"about1.jpg"}
+              src={"about.jpg"}
               alt="About Us"
               className="relative w-full aspect-square object-cover rounded-[80px] shadow-2xl"
             />
@@ -84,7 +85,7 @@ function Header() {
             <div className="grid grid-cols-2 gap-8">
               {[
                 { val: "5+", lab: "Years of Excellence" },
-                { val: "5M+", lab: "Active Writers" },
+                { val: "5M+", lab: "Active Employees" },
                 { val: "$100M+", lab: "Paid Out" },
                 { val: "99%", lab: "Satisfaction" },
               ].map((stat, i) => (
@@ -102,10 +103,10 @@ function Header() {
             <div className="h-[1px] w-full bg-slate-100 my-10" />
 
             <p className="text-slate-600 leading-relaxed font-medium mb-10 italic">
-              "We provide an ecosystem where talent meets opportunity. Our
-              mission is to democratize access to high-quality writing projects
-              while ensuring a fair and transparent earning environment for
-              every user."
+              We provide an ecosystem where talent meets opportunity. Our
+              mission is to democratize access to high-quality job opportunities
+              while ensuring a fair, transparent, and trustworthy earning
+              environment for every user.
             </p>
 
             <button className="group flex items-center gap-4 bg-slate-900 text-white px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-indigo-600 transition-all shadow-xl">

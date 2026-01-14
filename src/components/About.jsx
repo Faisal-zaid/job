@@ -28,7 +28,7 @@ const About = () => {
       icon: ShieldHalf,
       title: "Verified Network",
       description:
-        "Exclusive community of verified high-tier writers and premium clients",
+        "Exclusive community of verified high-tier workers and premium clients",
     },
     {
       icon: ChartColumn,
@@ -78,11 +78,11 @@ const About = () => {
 
           <div className="relative z-10 flex flex-col items-center text-center">
             <h2 className="text-3xl md:text-5xl font-black text-white mb-6 uppercase italic tracking-tighter">
-              Ready To Rewrite <br /> Your Future?
+              Ready To Work <br /> Your Future?
             </h2>
             <p className="text-slate-400 max-w-lg text-sm md:text-base font-medium mb-10 leading-relaxed">
-              Join a global community of elite creators. Start earning on your
-              own terms with the tools built for professional writers.
+              Join a global community of elite creators. Earn on your own terms
+              using tools designed for professional workers.
             </p>
 
             <Link
