@@ -3,7 +3,7 @@ import Home from "./pages/Home";
 import Navbar from "./components/Navbar";
 import Jobs from "./pages/Jobs";
 import JobDetails from "./pages/JobDetails";
-import Login from "./pages/Login";
+import Login from "./pages/SignUp";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 
