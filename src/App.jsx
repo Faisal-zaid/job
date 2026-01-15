@@ -1,16 +1,20 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom"
-import Navbar from "./components/Navbar"
-import Home from "./pages/Home"
-import Jobs from "./pages/Jobs"
-import JobDetails from "./pages/JobDetails"
-import Login from "./pages/Login"
-import Register from "./pages/Register"
-import Dashboard from "./pages/Dashboard"
+import { Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import Navbar from "./components/Navbar";
+import Jobs from "./pages/Jobs";
+import JobDetails from "./pages/JobDetails";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   return (
-    <BrowserRouter>
+    <>
+      {/* Navbar stays outside <Routes> so it shows on every page.
+          No <BrowserRouter> here because it's already in main.jsx! 
+      */}
       <Navbar />
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/jobs" element={<Jobs />} />
@@ -19,8 +23,8 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
-    </BrowserRouter>
-  )
+    </>
+  );
 }
 
-export default App
+export default App;
