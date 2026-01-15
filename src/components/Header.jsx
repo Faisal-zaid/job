@@ -156,6 +156,7 @@ function Header() {
                 <StatItem val="$100M+" lab="Paid Out" />
                 <StatItem val="99%" lab="Satisfaction" />
               </motion.div>
+              
 
               <div className="h-[1px] w-full bg-slate-100 my-10" />
 
