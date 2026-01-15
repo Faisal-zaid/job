@@ -1,14 +1,28 @@
 import React from "react";
+import { motion } from "framer-motion"; // Import motion
 import FeatureCard from "./FeatureCard";
-import {
-  Lock,
-  Zap,
-  ShieldHalf,
-  ChartColumn,
-  Shovel,
-  ArrowRight,
-} from "lucide-react";
+import { Lock, Zap, ShieldHalf, ChartColumn, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+
+// Animation Variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15, // Cards will pop in one by one
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 60, damping: 20 },
+  },
+};
 
 const About = () => {
   const features = [
@@ -45,7 +59,12 @@ const About = () => {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:40px_40px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-40" />
 
         <div className="container mx-auto px-6 relative z-10">
-          <div className="max-w-3xl mb-20">
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="max-w-3xl mb-20">
             <h2 className="text-4xl md:text-6xl font-black text-slate-900 uppercase italic tracking-tighter leading-none mb-6">
               Engineering <br />
               <span className="text-indigo-600 font-black">
@@ -55,24 +74,41 @@ const About = () => {
             <p className="text-slate-500 font-bold uppercase text-[10px] tracking-[0.4em]">
               Everything you need to scale your freelance career
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* FEATURES GRID WITH STAGGER */}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feature) => (
-              <FeatureCard
-                key={feature.title}
-                icon={feature.icon}
-                title={feature.title}
-                description={feature.description}
-              />
+              <motion.div key={feature.title} variants={itemVariants}>
+                <FeatureCard
+                  icon={feature.icon}
+                  title={feature.title}
+                  description={feature.description}
+                />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* CALL TO ACTION SECTION */}
+      {/* CALL TO ACTION SECTION - Smooth Scale & Fade */}
       <section className="pb-32 px-6">
-        <div className="max-w-6xl mx-auto bg-slate-900 rounded-[48px] p-12 md:p-24 relative overflow-hidden shadow-2xl shadow-indigo-200">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, y: 50 }}
+          whileInView={{ opacity: 1, scale: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{
+            type: "spring",
+            stiffness: 40,
+            damping: 15,
+            mass: 1.2,
+          }}
+          className="max-w-6xl mx-auto bg-slate-900 rounded-[48px] p-12 md:p-24 relative overflow-hidden shadow-2xl shadow-indigo-200">
           {/* Decorative glow */}
           <div className="absolute -top-24 -right-24 w-96 h-96 bg-indigo-600 rounded-full blur-[120px] opacity-20" />
 
@@ -92,7 +128,7 @@ const About = () => {
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
-        </div>
+        </motion.div>
       </section>
     </>
   );
