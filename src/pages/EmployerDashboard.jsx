@@ -1,8 +1,20 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Plus,
+  Briefcase,
+  Trash2,
+  Building2,
+  GraduationCap,
+  Globe,
+} from "lucide-react";
 import EmployerApplications from "./EmployerApplications";
 
 function EmployerDashboard() {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem("user")) || {
+    name: "Employer",
+    email: "",
+  };
   const [view, setView] = useState("jobs");
   const [jobs, setJobs] = useState(
     JSON.parse(localStorage.getItem("jobs")) || []
@@ -11,99 +23,14 @@ function EmployerDashboard() {
     JSON.parse(localStorage.getItem("companies")) || []
   );
 
-  // --- Styles Object ---
-  const styles = {
-    container: {
-      maxWidth: "900px",
-      margin: "40px auto",
-      padding: "20px",
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      color: "#333",
-    },
-    header: {
-      color: "#1a73e8",
-      borderBottom: "2px solid #e1e4e8",
-      paddingBottom: "10px",
-      marginBottom: "20px",
-    },
-    nav: { display: "flex", gap: "10px", marginBottom: "30px" },
-    navBtn: (active) => ({
-      padding: "10px 20px",
-      cursor: "pointer",
-      border: "none",
-      borderRadius: "5px",
-      backgroundColor: active ? "#1a73e8" : "#e1e7f0",
-      color: active ? "white" : "#1a73e8",
-      fontWeight: "bold",
-      transition: "0.3s",
-    }),
-    form: {
-      backgroundColor: "#f0f7ff",
-      padding: "25px",
-      borderRadius: "8px",
-      border: "1px solid #c2d7ff",
-      marginBottom: "40px",
-    },
-    label: {
-      display: "block",
-      marginBottom: "5px",
-      fontWeight: "600",
-      color: "#2c3e50",
-    },
-    input: {
-      width: "100%",
-      padding: "10px",
-      marginBottom: "15px",
-      borderRadius: "4px",
-      border: "1px solid #b4c5e4",
-      boxSizing: "border-box",
-    },
-    submitBtn: {
-      backgroundColor: "#1a73e8",
-      color: "white",
-      padding: "12px 24px",
-      border: "none",
-      borderRadius: "4px",
-      cursor: "pointer",
-      fontSize: "16px",
-      width: "100%",
-    },
-    jobCard: {
-      border: "1px solid #e1e4e8",
-      borderRadius: "8px",
-      padding: "20px",
-      marginBottom: "15px",
-      backgroundColor: "white",
-      boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-    },
-    deleteBtn: {
-      backgroundColor: "#ff4d4d",
-      color: "white",
-      border: "none",
-      padding: "8px 15px",
-      borderRadius: "4px",
-      cursor: "pointer",
-      marginTop: "10px",
-    },
-    badge: {
-      backgroundColor: "#e1f0ff",
-      color: "#1a73e8",
-      padding: "4px 8px",
-      borderRadius: "4px",
-      fontSize: "12px",
-      marginRight: "10px",
-      fontWeight: "bold",
-    },
-  };
-
   function addJob(e) {
     e.preventDefault();
     const form = e.target;
     const companyName = form.company.value.trim();
+
     let company = companies.find(
       (c) => c.name.toLowerCase() === companyName.toLowerCase()
     );
-
     if (!company) {
       company = { id: Date.now(), name: companyName };
       const updatedCompanies = [...companies, company];
@@ -119,149 +46,184 @@ function EmployerDashboard() {
       education: form.education.value,
       companyId: company.id,
       employerEmail: user.email,
+      date: new Date().toLocaleDateString(),
     };
 
-    const updatedJobs = [...jobs, newJob];
+    const updatedJobs = [newJob, ...jobs];
     setJobs(updatedJobs);
     localStorage.setItem("jobs", JSON.stringify(updatedJobs));
     form.reset();
   }
 
   function deleteJob(jobId) {
-    const password = prompt("Enter your password to delete this job:");
-    if (password !== user.password) {
-      alert("Incorrect password.");
-      return;
+    if (window.confirm("Are you sure you want to delete this listing?")) {
+      const updatedJobs = jobs.filter((job) => job.id !== jobId);
+      setJobs(updatedJobs);
+      localStorage.setItem("jobs", JSON.stringify(updatedJobs));
     }
-    const updatedJobs = jobs.filter((job) => job.id !== jobId);
-    setJobs(updatedJobs);
-    localStorage.setItem("jobs", JSON.stringify(updatedJobs));
   }
 
-  function getCompanyName(companyId) {
-    const company = companies.find((c) => c.id === companyId);
-    return company ? company.name : "Unknown Company";
-  }
+  const getCompanyName = (id) =>
+    companies.find((c) => c.id === id)?.name || "Unknown Company";
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.header}>Employer Dashboard</h2>
+    <div className="min-h-screen bg-slate-50 py-12 px-6 lg:px-32">
+      <div className="max-w-6xl mx-auto">
+        {/* HEADER */}
+        <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div>
+            <h1 className="text-4xl font-black text-slate-900 uppercase italic tracking-tighter">
+              Employer <span className="text-indigo-600">Dashboard</span>
+            </h1>
+            <p className="text-slate-500 font-bold uppercase text-[10px] tracking-[0.3em] mt-2">
+              Manage your talent pipeline
+            </p>
+          </div>
 
-      <div style={styles.nav}>
-        <button
-          style={styles.navBtn(view === "jobs")}
-          onClick={() => setView("jobs")}>
-          My Jobs
-        </button>
-        <button
-          style={styles.navBtn(view === "applications")}
-          onClick={() => setView("applications")}>
-          Applications
-        </button>
-      </div>
-      
+          <div className="flex bg-slate-200 p-1 rounded-2xl">
+            {["jobs", "applications"].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setView(tab)}
+                className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                  view === tab
+                    ? "bg-white text-indigo-600 shadow-sm"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}>
+                {tab}
+              </button>
+            ))}
+          </div>
+        </header>
 
-      {view === "jobs" && (
-        <>
-          <h3 style={{ color: "#2c3e50" }}>Post a New Position</h3>
-          <form onSubmit={addJob} style={styles.form}>
-            <label style={styles.label}>Job Title</label>
-            <input
-              name="title"
-              required
-              style={styles.input}
-              placeholder="e.g. Senior Software Engineer"
-            />
-
-            <label style={styles.label}>Job Description</label>
-            <textarea
-              name="description"
-              required
-              style={{ ...styles.input, height: "100px" }}
-            />
-
-            <div style={{ display: "flex", gap: "20px" }}>
-              <div style={{ flex: 1 }}>
-                <label style={styles.label}>Job Type</label>
-                <select name="type" required style={styles.input}>
-                  <option value="">Select</option>
-                  <option value="remote">Remote</option>
-                  <option value="hybrid">Hybrid</option>
-                  <option value="physical">Physical</option>
-                </select>
-              </div>
-              <div style={{ flex: 1 }}>
-                <label style={styles.label}>Education Level</label>
-                <select name="education" required style={styles.input}>
-                  <option value="">Select</option>
-                  <option value="form 4">Form 4</option>
-                  <option value="certificate">Certificate</option>
-                  <option value="diploma">Diploma</option>
-                  <option value="degree">Degree</option>
-                  <option value="masters">Masters</option>
-                  <option value="phd">PhD</option>
-                </select>
-              </div>
-            </div>
-
-            <label style={styles.label}>Company Name</label>
-            <input name="company" required style={styles.input} />
-
-            <button type="submit" style={styles.submitBtn}>
-              Post Job Listing
-            </button>
-          </form>
-
-
-
-          <h3 style={{ color: "#2c3e50" }}>Your Active Listings</h3>
-          {jobs
-            .filter((job) => job.employerEmail === user.email)
-            .map((job) => (
-              <div key={job.id} style={styles.jobCard}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                  }}>
-                  <div>
-                    <h4
-                      style={{
-                        margin: "0 0 10px 0",
-                        color: "#1a73e8",
-                        fontSize: "20px",
-                      }}>
-                      {job.title}
-                    </h4>
-                    <p
-                      style={{
-                        margin: "0 0 10px 0",
-                        color: "#666",
-                        lineHeight: "1.5",
-                      }}>
-                      {job.description}
-                    </p>
-                    <div style={{ marginTop: "10px" }}>
-                      <span style={styles.badge}>{job.type.toUpperCase()}</span>
-                      <span style={styles.badge}>{job.education}</span>
-                      <span style={{ fontSize: "14px", color: "#555" }}>
-                        🏢 {getCompanyName(job.companyId)}
-                      </span>
+        <AnimatePresence mode="wait">
+          {view === "jobs" ? (
+            <motion.div
+              key="jobs"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="grid lg:grid-cols-3 gap-12">
+              {/* POST JOB FORM */}
+              <div className="lg:col-span-1">
+                <div className="bg-white p-8 rounded-[32px] shadow-xl shadow-slate-200/60 border border-slate-100 sticky top-8">
+                  <h3 className="text-xl font-black text-slate-900 uppercase italic mb-6 flex items-center gap-2">
+                    <Plus className="w-5 h-5 text-indigo-600" /> Post Position
+                  </h3>
+                  <form onSubmit={addJob} className="space-y-4">
+                    <div>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">
+                        Title
+                      </label>
+                      <input
+                        name="title"
+                        required
+                        className="w-full p-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                        placeholder="Project Lead"
+                      />
                     </div>
-                  </div>
-                  <button
-                    onClick={() => deleteJob(job.id)}
-                    style={styles.deleteBtn}>
-                    Delete
-                  </button>
+                    <div>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">
+                        Description
+                      </label>
+                      <textarea
+                        name="description"
+                        required
+                        className="w-full p-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 h-32"
+                        placeholder="Describe the role..."
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <select
+                        name="type"
+                        required
+                        className="p-4 bg-slate-50 rounded-2xl border-none text-sm font-bold text-slate-600">
+                        <option value="remote">Remote</option>
+                        <option value="hybrid">Hybrid</option>
+                        <option value="physical">On-site</option>
+                      </select>
+                      <select
+                        name="education"
+                        required
+                        className="p-4 bg-slate-50 rounded-2xl border-none text-sm font-bold text-slate-600">
+                        <option value="Degree">Degree</option>
+                        <option value="Diploma">Diploma</option>
+                        <option value="Masters">Masters</option>
+                      </select>
+                    </div>
+                    <input
+                      name="company"
+                      required
+                      className="w-full p-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500"
+                      placeholder="Company Name"
+                    />
+                    <button
+                      type="submit"
+                      className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-100">
+                      Post Listing
+                    </button>
+                  </form>
                 </div>
               </div>
-            ))}
-        </>
-      )}
 
-      {view === "applications" && <EmployerApplications />}
+              {/* ACTIVE LISTINGS */}
+              <div className="lg:col-span-2 space-y-6">
+                <h3 className="text-xl font-black text-slate-900 uppercase italic mb-6 flex items-center gap-2">
+                  <Briefcase className="w-5 h-5 text-indigo-600" /> Active
+                  Listings
+                </h3>
+                {jobs
+                  .filter((j) => j.employerEmail === user.email)
+                  .map((job, i) => (
+                    <motion.div
+                      key={job.id}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.1 }}
+                      className="group bg-white p-8 rounded-[32px] border-2 border-transparent hover:border-indigo-100 transition-all shadow-sm hover:shadow-xl hover:shadow-indigo-500/5">
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-4">
+                          <h4 className="text-2xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
+                            {job.title}
+                          </h4>
+                          <p className="text-slate-500 text-sm font-medium leading-relaxed max-w-md">
+                            {job.description}
+                          </p>
+                          <div className="flex flex-wrap gap-3">
+                            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-wider">
+                              <Globe className="w-3 h-3" /> {job.type}
+                            </span>
+                            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-black uppercase tracking-wider">
+                              <GraduationCap className="w-3 h-3" />{" "}
+                              {job.education}
+                            </span>
+                            <span className="flex items-center gap-1.5 px-3 py-1.5 text-slate-400 text-[10px] font-black uppercase tracking-wider">
+                              <Building2 className="w-3 h-3" />{" "}
+                              {getCompanyName(job.companyId)}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => deleteJob(job.id)}
+                          className="p-3 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="apps"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}>
+              <EmployerApplications />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
