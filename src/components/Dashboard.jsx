@@ -11,4 +11,12 @@ function Dashboard() {
   if (user.role === "job_seeker") {
     return <JobSeekerDashboard user={user} />;
   }
+
+  if (user.role === "employer") {
+    return <EmployerDashboard />;
+  }
+
+  return <p>Unknown role</p>;
 }
+
+export default Dashboard;
