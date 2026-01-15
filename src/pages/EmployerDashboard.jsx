@@ -66,6 +66,7 @@ function EmployerDashboard() {
   const getCompanyName = (id) =>
     companies.find((c) => c.id === id)?.name || "Unknown Company";
 
+  
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-6 lg:px-32">
       <div className="max-w-6xl mx-auto">
@@ -95,6 +96,7 @@ function EmployerDashboard() {
             ))}
           </div>
         </header>
+
 
         <AnimatePresence mode="wait">
           {view === "jobs" ? (
