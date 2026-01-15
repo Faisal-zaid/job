@@ -178,6 +178,7 @@ function SignUp() {
             </div>
           )}
 
+
           <div className={!isSignIn ? "grid grid-cols-2 gap-4" : ""}>
             <InputWrapper label="Password" icon={Lock} error={errors.password}>
               <input type="password" {...register("password")} className={inputClass} placeholder="••••••••" />
@@ -188,6 +189,7 @@ function SignUp() {
               </InputWrapper>
             )}
           </div>
+
 
           <button type="submit" className="w-full py-4 bg-slate-900 text-white rounded-[20px] font-black uppercase text-xs tracking-[0.2em] hover:bg-indigo-600 transition-all flex items-center justify-center gap-3">
             {isSignIn ? "Sign In" : "Register Account"} <ArrowRight size={16} />
