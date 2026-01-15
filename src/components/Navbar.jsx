@@ -5,7 +5,7 @@ function Navbar() {
   return (
     <nav>
       <Link to="/">Home</Link> | <Link to="/jobs">Jobs</Link> |{" "}
-      <Link to="/login">Login</Link> | <Link to="/dashboard">Dashboard</Link>
+      <Link to="/signup">Get Started</Link> | <Link to="/dashboard">Dashboard</Link>
     </nav>
   );
 }
