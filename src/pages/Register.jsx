@@ -21,4 +21,14 @@ const Register = ({ setUser }) => {
       body: JSON.stringify({ name, email, password, role }),
     });
   };
+
+  // Parse JSON response from server
+  //NOTE: Temporarily commented out because 'await' can't be used outside an async function
+
+  //const data = await res.json();
+  if (res.ok) {
+    // Save authentication token and role in local storage
+    localStorage.setItem("token", data.access_token);
+    localStorage.setItem("role", data.user.role);
+  }
 };
