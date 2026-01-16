@@ -1,60 +1,87 @@
-import { useForm } from "react-hook-form";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+const Register = ({ setUser }) => {
+  // State for form inputs
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("job_seeker");
 
-function Register() {
-  const { register, handleSubmit } = useForm();
+  const [error, setError] = useState("");
+
+  // Hook used to redirect user after successful registration
   const navigate = useNavigate();
 
-  function onSubmit(data) {
-    //Get existing users
-    const users = JSON.parse(localStorage.getItem("users")) || [];
+  // Handles user registration request
+  const handleRegister = async () => {
+    // Send POST request to backend register endpoint
+    const res = await fetch("http://127.0.0.1:5000/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password, role }),
+    });
 
-    //Prevent duplicate email
-    const exists = users.find((u) => u.email === data.email);
-    if (exists) {
-      alert("User already exists");
-      return;
+    // Parse JSON response from server
+    const data = await res.json();
+    if (res.ok) {
+      // Save authentication token and role in local storage
+      localStorage.setItem("token", data.access_token);
+      localStorage.setItem("role", data.user.role);
+
+      // Update application user state
+      setUser(data.user);
+
+      // Redirect user based on role
+      if (data.user.role === "employer") {
+        navigate("/employer-dashboard");
+      } else {
+        navigate("/jobseeker-dashboard");
+      }
+    } else {
+      // Display error message if registration fails
+      setError(data.message);
     }
-
-    //Assign ID
-    const newUser = {
-      id: Date.now(),
-      ...data,
-    };
-
-    //Save users array
-    users.push(newUser);
-    localStorage.setItem("users", JSON.stringify(users));
-
-    //Save logged-in user
-    localStorage.setItem("user", JSON.stringify(newUser));
-
-    navigate("/dashboard");
-  }
+  };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <div>
       <h2>Register</h2>
 
-      <label> Name</label>
-      <input type="name" {...register("name")} required />
+      {/* Name input */}
+      <input
+        placeholder="Name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
 
-      <label> Email </label>
-      <input type="email" {...register("email")} required />
+      {/* Email input */}
+      <input
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
 
-      <label> Role </label>
-      <select {...register("role")} required>
-        <option value="">Select role</option>
+      {/* Password input */}
+      <input
+        placeholder="Password"
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+
+      {/* Role selection */}
+      <select value={role} onChange={(e) => setRole(e.target.value)}>
         <option value="job_seeker">Job Seeker</option>
         <option value="employer">Employer</option>
       </select>
 
-      <label> Password </label>
-      <input type="password" {...register("password")} required />
+      {/* Register button */}
+      <button onClick={handleRegister}>Register</button>
 
-      <button type="submit"> Register </button>
-    </form>
+      {/* Show error message if registration fails */}
+      {error && <p>{error}</p>}
+    </div>
   );
-}
+};
 
 export default Register;
