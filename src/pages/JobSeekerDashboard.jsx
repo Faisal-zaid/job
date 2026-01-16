@@ -35,3 +35,24 @@ const JobSeekerDashboard = () => {
       setJobs([]);
     }
   };
+
+    useEffect(() => {
+    fetchJobs();
+  }, [token]);
+
+  const filteredJobs = jobs.filter((job) => {
+    const matchesType = !filter || job.job_type?.toLowerCase() === filter.toLowerCase();
+    const matchesSearch = !searchQuery || job.title?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    let matchesSalary = true;
+
+    if (salaryRange && job.salary_min != null && job.salary_max != null) {
+      const [min, max] = salaryRange.includes("+")
+        ? [500000, Infinity]
+        : salaryRange.split("-").map(Number);
+
+      matchesSalary = job.salary_min >= min && job.salary_max <= max;
+    }
+
+    return matchesType && matchesSearch && matchesSalary;
+  });
