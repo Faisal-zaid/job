@@ -45,3 +45,40 @@ const Register = ({ setUser }) => {
     setError(data.message);
   }
 };
+
+return (
+  <div>
+    <h2>Register</h2>
+
+    {/* Name input */}
+    <input
+      placeholder="Name"
+      value={name}
+      onChange={(e) => setName(e.target.value)}
+    />
+
+    {/* Email input */}
+    <input
+      placeholder="Email"
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+    />
+
+    {/* Password input */}
+    <input
+      placeholder="Password"
+      type="password"
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+    />
+
+    {/* Role selection */}
+    <select value={role} onChange={(e) => setRole(e.target.value)}>
+      <option value="job_seeker">Job Seeker</option>
+      <option value="employer">Employer</option>
+    </select>
+
+    {/* Register button */}
+    <button onClick={handleRegister}>Register</button>
+  </div>
+);
