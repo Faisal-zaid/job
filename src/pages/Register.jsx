@@ -30,5 +30,18 @@ const Register = ({ setUser }) => {
     // Save authentication token and role in local storage
     localStorage.setItem("token", data.access_token);
     localStorage.setItem("role", data.user.role);
+
+    // Update application user state
+    setUser(data.user);
+
+    // Redirect user based on role
+    if (data.user.role === "employer") {
+      navigate("/employer-dashboard");
+    } else {
+      navigate("/jobseeker-dashboard");
+    }
+  } else {
+    // Display error message if registration fails
+    setError(data.message);
   }
 };
