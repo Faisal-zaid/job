@@ -6,4 +6,19 @@ const Register = ({ setUser }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("job_seeker");
+
+  const [error, setError] = useState("");
+
+  // Hook used to redirect user after successful registration
+  const navigate = useNavigate();
+
+  // Handles user registration request
+  const handleRegister = async () => {
+    // Send POST request to backend register endpoint
+    const res = await fetch("http://127.0.0.1:5000/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password, role }),
+    });
+  };
 };
