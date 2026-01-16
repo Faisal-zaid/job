@@ -1,21 +1,16 @@
-import JobSeekerDashboard from "./JobSeekerDashboard";
-import EmployerDashboard from "./EmployerDashboard";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
-function Dashboard() {
-  // Get user from localStorage
-  const user = JSON.parse(localStorage.getItem("user"));
+const Dashboard = ({ user }) => {
+  const navigate = useNavigate();
 
-  // If no user, ask to login
-  if (!user) return <p>Please login first</p>;
+  useEffect(() => {
+    if (!user) navigate("/login");
+    else if (user.role === "employer") navigate("/employer-dashboard");
+    else navigate("/jobseeker-dashboard");
+  }, [user, navigate]);
 
-  // Show dashboard for job seeker
-  if (user.role === "job_seeker") return <JobSeekerDashboard user={user} />;
-
-  // Show dashboard for employer
-  if (user.role === "employer") return <EmployerDashboard />;
-
-  // Unknown role
-  return <p>Unknown role</p>;
-}
+  return <div>Redirecting...</div>;
+};
 
 export default Dashboard;

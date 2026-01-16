@@ -1,98 +1,149 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 
-function JobDetails() {
-  const { id } = useParams(); // get job id from route
+const JobDetails = () => {
+  const { id } = useParams();
   const [job, setJob] = useState(null);
-  const [user, setUser] = useState(null);
-  const [applied, setApplied] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
+  // Application form state
+  const [name, setName] = useState("");
+  const [education, setEducation] = useState("form4");
+  const [cvText, setCvText] = useState("");
+  const [coverLetter, setCoverLetter] = useState("");
+
+  const token = localStorage.getItem("token"); // JWT token
+
+  // Fetch job details
   useEffect(() => {
-    const jobs = JSON.parse(localStorage.getItem("jobs")) || [];
-    const jobFound = jobs.find((j) => j.id === parseInt(id));
-    setJob(jobFound);
+    const fetchJob = async () => {
+      try {
+        const res = await fetch(`http://127.0.0.1:5000/jobs/${id}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!res.ok) throw new Error("Failed to load job");
+        const data = await res.json();
+        setJob(data);
+      } catch (err) {
+        console.error("Error fetching job:", err);
+        setError("Could not load job. Try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchJob();
+  }, [id, token]);
 
-    const currentUser = JSON.parse(localStorage.getItem("user"));
-    setUser(currentUser);
+  const handleApply = async () => {
+    if (!job || !job.id) {
+      alert("Job information is not loaded yet. Refresh the page.");
+      return;
+    }
 
-    // Check if user already applied
-    const applications = JSON.parse(localStorage.getItem("applications")) || [];
-    const alreadyApplied = applications.some(
-      (app) =>
-        app.jobId === parseInt(id) && app.userEmail === currentUser?.email
-    );
-    setApplied(alreadyApplied);
-  }, [id]);
+    if (!name || !education || !cvText || !coverLetter) {
+      alert("Please fill in all fields");
+      return;
+    }
 
-  function applyJob(e) {
-    e.preventDefault();
-    const form = e.target;
-    const formData = new FormData(form);
+    try {
+      const res = await fetch("http://127.0.0.1:5000/applications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          job_id: job.id,
+          applicant_name: name,
+          education,
+          cv: cvText,
+          cover_letter: coverLetter,
+        }),
+      });
 
-    const applications = JSON.parse(localStorage.getItem("applications")) || [];
+      const data = await res.json();
 
-    applications.push({
-      jobId: job.id,
-      jobTitle: job.title,
-      employerEmail: job.employerEmail,
-      applicantName: formData.get("name"),
-      applicantEmail: formData.get("email"),
-      coverLetter: formData.get("coverLetter"),
-      cv: formData.get("cv").name,
-      appliedAt: new Date().toISOString(),
-    });
+      if (res.ok) {
+        alert("Application submitted successfully!");
+        setName("");
+        setEducation("form4");
+        setCvText("");
+        setCoverLetter("");
+      } else {
+        alert(JSON.stringify(data));
+      }
+    } catch (error) {
+      console.error("Apply error:", error);
+      alert("Something went wrong. Try again.");
+    }
+  };
 
-    localStorage.setItem("applications", JSON.stringify(applications));
-    alert("Application submitted successfully!");
-    setApplied(true);
-    form.reset();
-  }
-
-  function getCompanyName(companyId) {
-    const companies = JSON.parse(localStorage.getItem("companies")) || [];
-    const company = companies.find((c) => c.id === companyId);
-    return company ? company.name : "Unknown Company";
-  }
-
-  if (!job) return <p>Job not found.</p>;
+  if (loading) return <p>Loading job details...</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   return (
-    <div>
+    <div style={{ padding: "20px" }}>
       <h2>{job.title}</h2>
+      <p>{job.description}</p>
       <p>
-        <strong>Company:</strong> {getCompanyName(job.companyId)}
-      </p>
-      <p>
-        <strong>Type:</strong> {job.type}
+        <strong>Type:</strong> {job.job_type}
       </p>
       <p>
         <strong>Education Required:</strong> {job.education}
       </p>
-      <p>{job.description}</p>
+      <p>
+        <strong>Company:</strong>{" "}
+        {job.company?.name || job.company_name || "N/A"}
+      </p>
 
-      {user?.role === "job_seeker" && !applied && (
-        <form onSubmit={applyJob}>
-          <h3>Apply for this job</h3>
+      <hr />
 
-          <label>Name</label>
-          <input name="name" defaultValue={user.name} required />
+      <h3>Apply for this job</h3>
 
-          <label>Email</label>
-          <input name="email" defaultValue={user.email} required />
+      <input
+        type="text"
+        placeholder="Your full name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <br />
+      <br />
 
-          <label>Cover Letter</label>
-          <textarea name="coverLetter" required />
+      <select value={education} onChange={(e) => setEducation(e.target.value)}>
+        <option value="form4">Form 4</option>
+        <option value="certificate">Certificate</option>
+        <option value="diploma">Diploma</option>
+        <option value="degree">Degree</option>
+        <option value="masters">Masters</option>
+        <option value="phd">PhD</option>
+      </select>
+      <br />
+      <br />
 
-          <label>Upload CV</label>
-          <input type="file" name="cv" required />
+      <textarea
+        placeholder="Paste your CV here"
+        value={cvText}
+        onChange={(e) => setCvText(e.target.value)}
+        rows={6}
+        cols={60}
+      />
+      <br />
+      <br />
 
-          <button type="submit">Submit Application</button>
-        </form>
-      )}
+      <textarea
+        placeholder="Paste your cover letter here"
+        value={coverLetter}
+        onChange={(e) => setCoverLetter(e.target.value)}
+        rows={6}
+        cols={60}
+      />
+      <br />
+      <br />
 
-      {applied && <p>You have already applied for this job.</p>}
+      <button onClick={handleApply}>Apply</button>
     </div>
   );
-}
+};
 
 export default JobDetails;
