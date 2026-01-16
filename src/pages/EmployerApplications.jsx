@@ -16,3 +16,7 @@ const EmployerApplications = () => {
     setApplications([]);
   }
 };
+
+  useEffect(() => {
+    fetchApplications();
+  }, []);
