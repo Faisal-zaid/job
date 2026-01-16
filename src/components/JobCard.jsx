@@ -17,6 +17,9 @@ const JobCard = ({ job }) => {
           ? `$${job.salary_min} - $${job.salary_max}`
           : "Not specified"}
       </p>
+
+      {/* Conditionally render location only if it exists */}
+      {job.location && <p>Location: {job.location}</p>}
     </div>
   );
 };
