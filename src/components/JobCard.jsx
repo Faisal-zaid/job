@@ -20,6 +20,11 @@ const JobCard = ({ job }) => {
 
       {/* Conditionally render location only if it exists */}
       {job.location && <p>Location: {job.location}</p>}
+
+      {/* Link navigates to the job details page where the user can apply for the job */}
+      <Link to={`/jobs/${job.id}`}>
+        <button>Apply</button>
+      </Link>
     </div>
   );
 };
