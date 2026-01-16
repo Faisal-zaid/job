@@ -11,6 +11,12 @@ const JobCard = ({ job }) => {
       <p>Type: {job.job_type}</p>
       <p>Education: {job.education}</p>
       <p>Company: {job.company ? job.company.name : "N/A"}</p>
+      <p>
+        Salary:{" "}
+        {job.salary_min && job.salary_max
+          ? `$${job.salary_min} - $${job.salary_max}`
+          : "Not specified"}
+      </p>
     </div>
   );
 };
