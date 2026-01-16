@@ -56,3 +56,31 @@ const JobSeekerDashboard = () => {
 
     return matchesType && matchesSearch && matchesSalary;
   });
+
+  return (
+    <div style={{ padding: "20px" }}>
+      <h2>Job Seeker Dashboard</h2>
+
+      <SearchBar onSearch={setSearchQuery} />
+      <JobFilter setFilter={setFilter} setSalary={setSalaryRange} />
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      {filteredJobs.length === 0 && !error && <p>No jobs found</p>}
+
+      <div>
+        {filteredJobs.map((job) => (
+          <JobCard
+            key={job.id}
+            job={{
+              ...job,
+              company: job.company || { name: job.company_name || "N/A" }, // 🔹 safe fallback
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default JobSeekerDashboard;
