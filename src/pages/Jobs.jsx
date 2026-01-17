@@ -1,8 +1,12 @@
 import { useState, useEffect } from "react";
 import SearchBar from "../components/SearchBar";
 
-function Jobs() {
+const Jobs = () => {
   const [jobs, setJobs] = useState([]);
+  const [filter, setFilter] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [salaryRange, setSalaryRange] = useState("");
+  const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -11,7 +15,7 @@ function Jobs() {
   }, []);
 
   const filteredJobs = jobs.filter((job) =>
-    job.title.toLowerCase().includes(search.toLowerCase())
+    job.title.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
@@ -40,6 +44,6 @@ function Jobs() {
       )}
     </div>
   );
-}
+};
 
 export default Jobs;
