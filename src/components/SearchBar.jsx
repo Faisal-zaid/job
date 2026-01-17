@@ -7,6 +7,17 @@ const SearchBar = ({ onSearch }) => {
     e.preventDefault();
     onSearch(query);
   };
+  return (
+    <form onSubmit={handleSearch}>
+      <input
+        type="text"
+        placeholder="Search jobs..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
+      <button type="submit">Search</button>
+    </form>
+  );
 };
 
 export default SearchBar;
