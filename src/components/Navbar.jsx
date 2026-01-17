@@ -1,14 +1,16 @@
 
-import { Link } from "react-router-dom";
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
 
-function Navbar() {
-  return (
-    <nav>
-      <Link to="/">Home</Link> | <Link to="/jobs">Jobs</Link> |{" "}
-      <Link to="/login">Login</Link> | <Link to="/dashboard">Dashboard</Link>
-    </nav>
-  );
-}
+const Navbar = ({ user, setUser }) => {
+  const navigate = useNavigate();
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    setUser(null);
+    navigate("/login");
+  };
 
 export default Navbar;
 import React from 'react'
