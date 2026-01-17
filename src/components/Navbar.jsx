@@ -12,6 +12,7 @@ const Navbar = ({ user, setUser }) => {
   };
 
   return (
+
     <nav className="navbar">
       <Link to="/">Home</Link>
       {user ? (
@@ -35,8 +36,13 @@ const Navbar = ({ user, setUser }) => {
       )}
       <Link to="/about">About</Link>
       <Link to="/contact">Contact</Link>
+
+    <nav>
+      <Link to="/">Home</Link> | <Link to="/jobs">Jobs</Link> |{" "}
+      <Link to="/signup">Get Started</Link> | <Link to="/dashboard">Dashboard</Link>
     </nav>
   );
 };
 
 export default Navbar;
+
