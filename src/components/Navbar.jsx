@@ -46,6 +46,7 @@ const Navbar = ({ user, setUser }) => {
     after:transition-transform after:duration-300 hover:after:scale-x-100`;
 
   return (
+
     <>
       {/* 1. MOBILE OVERLAY - Lower z-index than drawer */}
       <div
@@ -111,6 +112,13 @@ const Navbar = ({ user, setUser }) => {
                 Register
               </Link>
             </div>
+
+    <nav className="navbar">
+      <Link to="/">Home</Link>
+      {user ? (
+        <>
+          {user.role === "employer" && (
+            <Link to="/employer-dashboard">Dashboard</Link>
           )}
           <a href="#About" className={linkStyles}>
             About
@@ -209,7 +217,26 @@ const Navbar = ({ user, setUser }) => {
         </div>
       </nav>
     </>
+          <button type="button" onClick={logout}>
+            Logout
+          </button>
+        </>
+      ) : (
+        <>
+          <Link to="/login">Login</Link>
+          <Link to="/register">Register</Link>
+        </>
+      )}
+      <Link to="/about">About</Link>
+      <Link to="/contact">Contact</Link>
+
+    <nav>
+      <Link to="/">Home</Link> | <Link to="/jobs">Jobs</Link> |{" "}
+      <Link to="/signup">Get Started</Link> | <Link to="/dashboard">Dashboard</Link>
+    </nav>
+
   );
 };
 
 export default Navbar;
+

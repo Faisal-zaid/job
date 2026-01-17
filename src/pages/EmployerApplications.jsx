@@ -1,52 +1,42 @@
-function EmployerApplications() {
-  const user = JSON.parse(localStorage.getItem("user"))
+import React, { useState, useEffect } from "react";
 
-  const jobs = JSON.parse(localStorage.getItem("jobs")) || []
-  const applications = JSON.parse(localStorage.getItem("applications")) || []
+const EmployerApplications = () => {
+  const [applications, setApplications] = useState([]);
+  const token = localStorage.getItem("token");
 
-  // Jobs posted by this employer
-  const myJobs = jobs.filter(job => job.employerEmail === user.email)
-  const myJobIds = myJobs.map(job => job.id)
+  const fetchApplications = async () => {
+  try {
+    const res = await fetch("http://127.0.0.1:5000/employer/applications", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    setApplications(data.applications || []);
+  } catch (err) {
+    console.error("Error fetching applications:", err);
+    setApplications([]);
+  }
+};
 
-  // Applications for those jobs
-  const myApplications = applications.filter(app =>
-    myJobIds.includes(app.jobId)
-  )
+  useEffect(() => {
+    fetchApplications();
+  }, []);
 
   return (
     <div>
-      <h2>Applications for Your Jobs</h2>
-
-      {myApplications.length === 0 && <p>No applications yet.</p>}
-
-      {myApplications.map((app, index) => (
-        <div
-          key={index}
-          style={{
-            border: "1px solid #ccc",
-            padding: "10px",
-            margin: "10px"
-          }}
-        >
-          <h4>{app.jobTitle}</h4>
-
-          <p><strong>Name:</strong> {app.name}</p>
-          <p><strong>Email:</strong> {app.email}</p>
-
-          <p><strong>Cover Letter:</strong></p>
-          <p>{app.coverLetter}</p>
-
-          <p><strong>CV:</strong> {app.cv}</p>
-
-          <p>
-            <small>
-              Applied on: {new Date(app.appliedAt).toLocaleString()}
-            </small>
-          </p>
+      <h2>Applications for My Jobs</h2>
+      {applications.length === 0 && <p>No applications yet</p>}
+      {applications.map(app => (
+        <div key={app.id} style={{ border: "1px solid #ccc", margin: 10, padding: 10 }}>
+          <p><strong>Job:</strong> {app.job_title}</p>
+          <p><strong>Applicant:</strong> {app.applicant_name}</p>
+          <p><strong>Education:</strong> {app.education}</p>
+          <p><strong>Cover Letter:</strong> {app.cover_letter}</p>
+          <p><strong>CV:</strong></p>
+          <pre>{app.cv}</pre>
         </div>
       ))}
     </div>
-  )
-}
+  );
+};
 
-export default EmployerApplications
+export default EmployerApplications;

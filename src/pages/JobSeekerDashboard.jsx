@@ -1,130 +1,86 @@
-import { useState } from "react"
+import React, { useState, useEffect } from "react";
+import JobCard from "../components/JobCard";
+import JobFilter from "../components/JobFilter";
+import SearchBar from "../components/SearchBar";
 
-function JobSeekerDashboard({ user }) {
-  const jobs = JSON.parse(localStorage.getItem("jobs")) || []
-  const companies = JSON.parse(localStorage.getItem("companies")) || []
-  const [selectedJob, setSelectedJob] = useState(null)
+const JobSeekerDashboard = () => {
+  const [jobs, setJobs] = useState([]);
+  const [filter, setFilter] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [salaryRange, setSalaryRange] = useState("");
+  const [error, setError] = useState(null);
 
-  // 🔹 NEW: search, filter, sort state
-  const [search, setSearch] = useState("")
-  const [jobType, setJobType] = useState("")
-  const [sort, setSort] = useState("latest")
+  const token = localStorage.getItem("token"); // 🔹 get JWT token
 
-  function getCompanyName(companyId) {
-    const company = companies.find(c => c.id === companyId)
-    return company ? company.name : "Unknown Company"
-  }
+  const fetchJobs = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:5000/jobs", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
 
-  function applyJob(e) {
-    e.preventDefault()
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || "Failed to fetch jobs");
+      }
 
-    const formData = new FormData(e.target)
-    const applications = JSON.parse(localStorage.getItem("applications")) || []
+      const data = await res.json();
 
-    applications.push({
-      jobId: selectedJob.id,
-      jobTitle: selectedJob.title,
-      companyName: getCompanyName(selectedJob.companyId),
-      userId: user.id,
-      name: formData.get("name"),
-      email: formData.get("email"),
-      coverLetter: formData.get("coverLetter"),
-      cv: formData.get("cv").name,
-      appliedAt: new Date().toISOString()
-    })
+      if (!Array.isArray(data)) throw new Error("Jobs data is not an array");
 
-    localStorage.setItem("applications", JSON.stringify(applications))
-    alert("Application submitted")
-    setSelectedJob(null)
-  }
+      setJobs(data);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching jobs:", err);
+      setError("Could not load jobs. Try again later.");
+      setJobs([]);
+    }
+  };
 
+    useEffect(() => {
+    fetchJobs();
+  }, [token]);
 
-  // 🔹 NEW: filter + search + sort logic
-  const filteredJobs = jobs
-    .filter(job =>
-      job.title.toLowerCase().includes(search.toLowerCase())
-    )
-    .filter(job =>
-      jobType ? job.type === jobType : true
-    )
-    .sort((a, b) =>
-      sort === "latest" ? b.id - a.id : a.id - b.id
-    )
+  const filteredJobs = jobs.filter((job) => {
+    const matchesType = !filter || job.job_type?.toLowerCase() === filter.toLowerCase();
+    const matchesSearch = !searchQuery || job.title?.toLowerCase().includes(searchQuery.toLowerCase());
 
+    let matchesSalary = true;
+
+    if (salaryRange && job.salary_min != null && job.salary_max != null) {
+      const [min, max] = salaryRange.includes("+")
+        ? [500000, Infinity]
+        : salaryRange.split("-").map(Number);
+
+      matchesSalary = job.salary_min >= min && job.salary_max <= max;
+    }
+
+    return matchesType && matchesSearch && matchesSalary;
+  });
 
   return (
-    <div>
-      <h2>Available Jobs</h2>
+    <div style={{ padding: "20px" }}>
+      <h2>Job Seeker Dashboard</h2>
 
-      {/* 🔹 NEW: Controls */}
-      <div style={{ marginBottom: "15px" }}>
-        <input
-          placeholder="Search job title..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
+      <SearchBar onSearch={setSearchQuery} />
+      <JobFilter setFilter={setFilter} setSalary={setSalaryRange} />
 
-        <select value={jobType} onChange={e => setJobType(e.target.value)}>
-          <option value="">All Types</option>
-          <option value="remote">Remote</option>
-          <option value="hybrid">Hybrid</option>
-          <option value="physical">Physical</option>
-        </select>
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
-         <select value={sort} onChange={e => setSort(e.target.value)}>
-          <option value="latest">Latest</option>
-          <option value="oldest">Oldest</option>
-        </select>
-      </div>
+      {filteredJobs.length === 0 && !error && <p>No jobs found</p>}
 
-      {/* 🔹 Jobs list */}
-      {filteredJobs.map((job, index) => (
-        <div
-          key={index}
-          style={{ border: "1px solid #ccc", margin: "10px", padding: "10px" }}
-        >
-          <h3>{job.title}</h3>
-          <p>{job.description}</p>
-          <p>Type: {job.type}</p>
-          <p>Education: {job.education}</p>
-          <p>Company: {getCompanyName(job.companyId)}</p>
-          <button onClick={() => setSelectedJob(job)}>Apply</button>
-        </div>
-      ))}
-
-      {/* 🔹 Apply form (UNCHANGED logic) */}
-      {selectedJob && (
-        <form
-          onSubmit={applyJob}
-          style={{ marginTop: "20px", border: "1px solid #000", padding: "10px" }}
-        >
-          <h3>Apply for {selectedJob.title}</h3>
-          <p>Company: {getCompanyName(selectedJob.companyId)}</p>
-
-          <label>Name</label>
-          <input name="name" defaultValue={user.name} required />
-
-          <label>Email</label>
-          <input name="email" defaultValue={user.email} required />
-
-          <label>Cover Letter</label>
-          <textarea
-            name="coverLetter"
-            placeholder="Type your cover letter here..."
-            required
+      <div>
+        {filteredJobs.map((job) => (
+          <JobCard
+            key={job.id}
+            job={{
+              ...job,
+              company: job.company || { name: job.company_name || "N/A" }, // 🔹 safe fallback
+            }}
           />
-
-          <label>Upload CV</label>
-          <input type="file" name="cv" required />
-
-          <button type="submit">Submit Application</button>
-        </form>
-      )}
+        ))}
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default JobSeekerDashboard
-
-
-
+export default JobSeekerDashboard;
