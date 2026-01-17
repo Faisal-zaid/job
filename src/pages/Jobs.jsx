@@ -24,19 +24,41 @@ const Jobs = () => {
   };
 
   useEffect(() => {
-    const storedJobs = JSON.parse(localStorage.getItem("jobs")) || [];
-    setJobs(storedJobs);
+    fetchJobs();
   }, []);
 
-  const filteredJobs = jobs.filter((job) =>
-    job.title.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filteredJobs = jobs.filter((job) => {
+    const matchesType =
+      !filter || job.job_type.toLowerCase() === filter.toLowerCase();
+    const matchesSearch =
+      !searchQuery ||
+      job.title.toLowerCase().includes(searchQuery.toLowerCase());
+
+    let matchesSalary = true;
+
+    if (salaryRange && job.salary_min != null && job.salary_max != null) {
+      const [min, max] = salaryRange.includes("+")
+        ? [500000, Infinity]
+        : salaryRange.split("-").map(Number);
+
+      matchesSalary = job.salary_min >= min && job.salary_max <= max;
+    }
+
+    return matchesType && matchesSearch && matchesSalary;
+  });
 
   return (
     <div style={{ padding: "1rem" }}>
       <h1>Available Jobs</h1>
 
-      <SearchBar search={search} setSearch={setSearch} />
+      <SearchBar
+        search={searchQuery}
+        setSearch={setSearchQuery}
+        filter={filter}
+        setFilter={setFilter}
+        salaryRange={salaryRange}
+        setSalaryRange={setSalaryRange}
+      />
 
       {filteredJobs.length === 0 ? (
         <p>No jobs found</p>
@@ -52,7 +74,7 @@ const Jobs = () => {
           >
             <h3>{job.title}</h3>
             <p>{job.description}</p>
-            <small>{job.type}</small>
+            <small>{job.job_type}</small>
           </div>
         ))
       )}
