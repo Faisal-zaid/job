@@ -1,13 +1,12 @@
-function SearchBar({ search, setSearch }) {
-  return (
-    <input
-      type="text"
-      placeholder="Search jobs..."
-      value={search}
-      onChange={(e) => setSearch(e.target.value)}
-      style={{ padding: "8px", width: "100%", marginBottom: "1rem" }}
-    />
-  );
-}
+import React, { useState } from "react";
+
+const SearchBar = ({ onSearch }) => {
+  const [query, setQuery] = useState("");
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    onSearch(query);
+  };
+};
 
 export default SearchBar;
