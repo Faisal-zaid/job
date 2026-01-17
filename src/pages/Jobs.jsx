@@ -9,6 +9,20 @@ const Jobs = () => {
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
 
+  const fetchJobs = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:5000/jobs");
+      if (!res.ok) throw new Error("Failed to fetch jobs");
+      const data = await res.json();
+      if (!Array.isArray(data)) throw new Error("Jobs data is not an array");
+      setJobs(data);
+    } catch (err) {
+      console.error("Error fetching jobs:", err);
+      setError("Could not load jobs. Try again later.");
+      setJobs([]); // fallback empty array
+    }
+  };
+
   useEffect(() => {
     const storedJobs = JSON.parse(localStorage.getItem("jobs")) || [];
     setJobs(storedJobs);
