@@ -1,35 +1,70 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import Navbar from "./components/Navbar";
+import EmployerDashboard from "./pages/EmployerDashboard";
+import JobSeekerDashboard from "./pages/JobSeekerDashboard";
+import Jobs from "./pages/Jobs";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import EmployerApplications from "./pages/EmployerApplications";
+import JobDetails from "./pages/JobDetails";
+import Home from "./pages/Home";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [user, setUser] = useState(null);
+
+  // 🔹 Load user from localStorage on app start
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) setUser(JSON.parse(storedUser));
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <BrowserRouter>
+      <Navbar user={user} setUser={setUser} />
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login setUser={setUser} />} />
+        <Route path="/register" element={<Register setUser={setUser} />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+
+        {/* Employer dashboard - protected */}
+        <Route
+          path="/employer-dashboard"
+          element={
+            user && user.role === "employer"
+              ? <EmployerDashboard user={user} />
+              : <Login setUser={setUser} />
+          }
+        />
+
+        {/* Job seeker dashboard - protected */}
+        <Route
+          path="/jobseeker-dashboard"
+          element={
+            user && user.role === "job_seeker"
+              ? <JobSeekerDashboard user={user} />
+              : <Login setUser={setUser} />
+          }
+        />
+
+        <Route path="/jobs/:id" element={<JobDetails />} />
+        <Route
+          path="/employer/applications"
+          element={
+            user && user.role === "employer"
+              ? <EmployerApplications />
+              : <Login setUser={setUser} />
+          }
+        />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
