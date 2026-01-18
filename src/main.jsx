@@ -1,18 +1,17 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
-import "./index.css";
-import App from "./App.jsx";
-import { AuthProvider } from "./context/AuthContext.jsx";
+import React from "react";
+import About from "../components/About";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
+function Home() {
+  return (
+    // Ensure the home content doesn't fight the Navbar for "stacking" space
+    <div className="relative z-0">
+      <Header />
+      <About />
+      <Footer />
+    </div>
+  );
+}
 
-createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </BrowserRouter>
-  </StrictMode>
-);
-
+export default Home;

@@ -1,10 +1,6 @@
 import React, { useState } from "react";
-<<<<<<< HEAD
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion"; // Consistent with your Header animations
-=======
-import { useNavigate } from "react-router-dom";
->>>>>>> origin/main
 
 const Login = ({ setUser }) => {
   const [email, setEmail] = useState("");
@@ -17,23 +13,14 @@ const Login = ({ setUser }) => {
       const res = await fetch("http://127.0.0.1:5000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-<<<<<<< HEAD
         body: JSON.stringify({ email, password }),
-=======
-        body: JSON.stringify({ email, password })
->>>>>>> origin/main
       });
 
       const data = await res.json();
 
       if (res.ok) {
         localStorage.setItem("token", data.access_token);
-<<<<<<< HEAD
         localStorage.setItem("user", JSON.stringify(data.user));
-=======
-        localStorage.setItem("user", JSON.stringify(data.user)); // ✅ FIX
-
->>>>>>> origin/main
         setUser(data.user);
 
         if (data.user.role === "employer") {
@@ -51,7 +38,6 @@ const Login = ({ setUser }) => {
   };
 
   return (
-<<<<<<< HEAD
     <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 px-6 py-12">
       {/* Background Decoration to match Home page */}
       <div className="absolute top-0 left-0 w-full h-64 bg-slate-900 z-0" />
@@ -134,33 +120,8 @@ const Login = ({ setUser }) => {
           </div>
         </div>
       </motion.div>
-=======
-    <div>
-      <h2>Login</h2>
-
-      <input
-        placeholder="Email"
-        value={email}
-        onChange={e => setEmail(e.target.value)}
-      />
-
-      <input
-        placeholder="Password"
-        type="password"
-        value={password}
-        onChange={e => setPassword(e.target.value)}
-      />
-
-      <button onClick={handleLogin}>Login</button>
-
-      {error && <p style={{ color: "red" }}>{error}</p>}
->>>>>>> origin/main
     </div>
   );
 };
 
-<<<<<<< HEAD
 export default Login;
-=======
-export default Login;
->>>>>>> origin/main
