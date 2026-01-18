@@ -35,7 +35,8 @@ const Navbar = ({ user, setUser }) => {
 
   const closeMenu = () => setIsMenuOpen(false);
 
-  // Always show navbar, but with different styles on home page
+  // --- STYLE CALCULATIONS (Order Matters!) ---
+
   const navBgClass = isHomePage
     ? isScrolled
       ? "bg-white shadow-lg"
@@ -50,11 +51,15 @@ const Navbar = ({ user, setUser }) => {
 
   const navBorderClass =
     isHomePage && !isScrolled ? "" : "border-b border-gray-100";
+
   const logoColorClass = isHomePage
     ? isScrolled
       ? "text-blue-700"
       : "text-white drop-shadow-lg"
     : "text-blue-700";
+
+  // FIX: Define navTextColor BEFORE using it in linkStyles
+  const navTextColor = navTextClass;
 
   const linkStyles = `relative group ${navTextColor} font-semibold transition-all duration-300 
     after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-[2px] 
@@ -62,11 +67,9 @@ const Navbar = ({ user, setUser }) => {
     ${isScrolled || !isHomePage ? "after:bg-blue-600" : "after:bg-white"} 
     after:transition-transform after:duration-300 hover:after:scale-x-100`;
 
-  const navTextColor = navTextClass;
-
   return (
     <>
-      {/* 1. MOBILE OVERLAY - Lower z-index than drawer */}
+      {/* 1. MOBILE OVERLAY */}
       <div
         className={`fixed inset-0 bg-black/60 z-[80] transition-opacity duration-300 md:hidden ${
           isMenuOpen ? "opacity-100 visible" : "opacity-0 invisible"
@@ -145,7 +148,7 @@ const Navbar = ({ user, setUser }) => {
           )}
         </button>
 
-        {/* 2. MOBILE DRAWER - Highest z-index */}
+        {/* 2. MOBILE DRAWER */}
         <div
           className={`fixed top-0 right-0 h-screen w-[80%] max-w-sm bg-white z-[100] shadow-2xl p-8 flex flex-col transform transition-transform duration-500 ease-in-out md:hidden ${
             isMenuOpen ? "translate-x-0" : "translate-x-full"
@@ -159,7 +162,6 @@ const Navbar = ({ user, setUser }) => {
               <Briefcase size={24} className="text-indigo-600" />
               Home
             </Link>
-
             <Link
               to="/jobs"
               onClick={closeMenu}
@@ -167,14 +169,12 @@ const Navbar = ({ user, setUser }) => {
               <Briefcase size={24} className="text-indigo-600" />
               Browse Jobs
             </Link>
-
             <Link
               to="/about"
               onClick={closeMenu}
               className="text-2xl font-bold text-gray-800 border-b pb-2">
               About
             </Link>
-
             <Link
               to="/contact"
               onClick={closeMenu}
