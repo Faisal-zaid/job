@@ -12,8 +12,10 @@ import {
   X,
   AlertCircle,
   Bookmark,
+  BookmarkCheck,
 } from "lucide-react";
 
+// --- Integrated Toast for feedback ---
 const Toast = ({ message, type, onClear }) => (
   <motion.div
     initial={{ opacity: 0, x: 20 }}
@@ -42,9 +44,10 @@ const JobDetails = () => {
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
+  const [isBookmarked, setIsBookmarked] = useState(false);
   const [form, setForm] = useState({
     name: "",
-    education: "degree",
+    education: "degree", // Default value
     cvText: "",
     coverLetter: "",
   });
@@ -57,6 +60,7 @@ const JobDetails = () => {
         const res = await fetch(`http://127.0.0.1:5000/jobs/${id}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
+        if (!res.ok) throw new Error("Job not found");
         const data = await res.json();
         setJob(data);
       } catch (err) {
@@ -74,9 +78,37 @@ const JobDetails = () => {
   };
 
   const handleApply = async () => {
-    if (!form.name || !form.cvText)
-      return showNotification("Name and CV required", "error");
-    showNotification("Application submitted successfully!");
+    if (!form.name || !form.cvText || !form.coverLetter) {
+      showNotification("Please complete all fields", "error");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://127.0.0.1:5000/applications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          job_id: job.id,
+          applicant_name: form.name,
+          education: form.education,
+          cv: form.cvText,
+          cover_letter: form.coverLetter,
+        }),
+      });
+
+      if (res.ok) {
+        showNotification("Application Sent Successfully!");
+        setForm({ name: "", education: "degree", cvText: "", coverLetter: "" });
+        setTimeout(() => navigate("/jobseeker-dashboard"), 2000);
+      } else {
+        showNotification("Submission failed", "error");
+      }
+    } catch (error) {
+      showNotification("Server error", "error");
+    }
   };
 
   if (loading)
@@ -86,18 +118,19 @@ const JobDetails = () => {
       </div>
     );
 
+  const inputStyle =
+    "w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 outline-none transition-all placeholder:text-slate-400";
+  const labelStyle =
+    "text-[11px] font-black text-slate-400 ml-1 mb-1 block uppercase tracking-wider";
+
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
-      {/* THEMED BLUE HEADER SECTION */}
-      <div className="bg-gradient-to-br from-indigo-900 via-blue-800 to-indigo-900 pt-32 pb-48 px-6 md:px-12 lg:px-24 relative overflow-hidden">
-        {/* Decorative subtle circles */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 rounded-full -ml-10 -mb-10 blur-2xl" />
-
+      {/* PROFESSIONAL BLUE HEADER */}
+      <div className="bg-gradient-to-br from-indigo-950 via-blue-900 to-indigo-900 pt-32 pb-48 px-6 md:px-12 lg:px-24 relative overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-indigo-100/70 hover:text-white transition-colors text-sm font-bold mb-8 group">
+            className="flex items-center gap-2 text-indigo-200/80 hover:text-white transition-colors text-sm font-bold mb-8 group">
             <ArrowLeft
               size={18}
               className="group-hover:-translate-x-1 transition-transform"
@@ -106,52 +139,58 @@ const JobDetails = () => {
           </button>
 
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <span className="bg-indigo-500/20 text-indigo-200 border border-indigo-400/30 px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-widest">
-                  Featured Opportunity
-                </span>
-              </div>
+            <div className="max-w-3xl">
               <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight leading-tight">
                 {job.title}
               </h2>
-              <div className="flex flex-wrap gap-4 mt-6">
-                <span className="flex items-center gap-2 text-indigo-100 font-medium">
+              <div className="flex flex-wrap gap-5 mt-8">
+                <div className="flex items-center gap-2 text-indigo-100/90 font-semibold bg-white/5 px-4 py-2 rounded-xl border border-white/10">
                   <Building2 size={18} className="text-indigo-400" />{" "}
                   {job.company_name}
-                </span>
-                <span className="flex items-center gap-2 text-indigo-100 font-medium">
+                </div>
+                <div className="flex items-center gap-2 text-indigo-100/90 font-semibold bg-white/5 px-4 py-2 rounded-xl border border-white/10">
                   <MapPin size={18} className="text-indigo-400" />{" "}
                   {job.location || "Remote"}
-                </span>
+                </div>
               </div>
             </div>
 
-            <button className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-6 py-3 rounded-xl transition-all font-bold">
-              <Bookmark size={20} /> Save Job
+            <button
+              onClick={() => setIsBookmarked(!isBookmarked)}
+              className={`flex items-center gap-2 px-6 py-4 rounded-2xl transition-all font-bold shadow-lg ${
+                isBookmarked
+                  ? "bg-indigo-500 text-white shadow-indigo-500/20"
+                  : "bg-white/10 hover:bg-white/20 border border-white/20 text-white"
+              }`}>
+              {isBookmarked ? (
+                <BookmarkCheck size={20} />
+              ) : (
+                <Bookmark size={20} />
+              )}
+              {isBookmarked ? "Bookmarked" : "Save Job"}
             </button>
           </div>
         </div>
       </div>
 
-      {/* CONTENT OVERLAP SECTION */}
+      {/* CONTENT GRID */}
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-24 -mt-32 relative z-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* LEFT: INFO */}
+          {/* LEFT: JOB INFO */}
           <div className="lg:col-span-7 space-y-6">
-            <div className="bg-white p-8 md:p-10 rounded-[32px] shadow-xl shadow-indigo-900/5 border border-slate-100">
+            <div className="bg-white p-8 md:p-10 rounded-[32px] shadow-xl shadow-indigo-950/5 border border-slate-100">
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-1 bg-indigo-600 rounded-full" />
-                <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest">
-                  Role Overview
+                <div className="w-10 h-1 bg-indigo-600 rounded-full" />
+                <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">
+                  About the Position
                 </h4>
               </div>
-              <p className="text-slate-600 leading-relaxed text-lg whitespace-pre-line">
+              <p className="text-slate-600 leading-relaxed text-lg whitespace-pre-line mb-10">
                 {job.description}
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-10">
-                <div className="flex items-center gap-4 p-5 bg-indigo-50/50 rounded-2xl border border-indigo-100/50">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center gap-4 p-5 bg-slate-50 rounded-2xl border border-slate-100">
                   <div className="p-3 bg-white text-indigo-600 rounded-xl shadow-sm">
                     <GraduationCap size={24} />
                   </div>
@@ -159,10 +198,10 @@ const JobDetails = () => {
                     <p className="text-[10px] font-black text-slate-400 uppercase">
                       Education
                     </p>
-                    <p className="text-indigo-900 font-bold">{job.education}</p>
+                    <p className="text-indigo-950 font-bold">{job.education}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 p-5 bg-indigo-50/50 rounded-2xl border border-indigo-100/50">
+                <div className="flex items-center gap-4 p-5 bg-slate-50 rounded-2xl border border-slate-100">
                   <div className="p-3 bg-white text-indigo-600 rounded-xl shadow-sm">
                     <Briefcase size={24} />
                   </div>
@@ -170,43 +209,60 @@ const JobDetails = () => {
                     <p className="text-[10px] font-black text-slate-400 uppercase">
                       Job Type
                     </p>
-                    <p className="text-indigo-900 font-bold">{job.job_type}</p>
+                    <p className="text-indigo-950 font-bold">{job.job_type}</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* RIGHT: FORM */}
+          {/* RIGHT: SUBMISSION CARD */}
           <div className="lg:col-span-5">
-            <div className="bg-white p-8 rounded-[32px] shadow-2xl shadow-indigo-900/10 border border-slate-100 sticky top-28">
+            <div className="bg-white p-8 rounded-[32px] shadow-2xl shadow-indigo-950/10 border border-slate-100 sticky top-28">
               <div className="flex items-center justify-between mb-8">
                 <h3 className="text-2xl font-black text-slate-900 tracking-tight">
-                  Apply Now
+                  Quick Apply
                 </h3>
-                <Send className="text-indigo-600" size={24} />
+                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                  <Send size={20} />
+                </div>
               </div>
 
               <div className="space-y-4">
-                <div className="group">
-                  <label className="text-[11px] font-bold text-slate-500 ml-1 mb-1 block uppercase">
-                    Full Name
-                  </label>
+                {/* NAME INPUT */}
+                <div>
+                  <label className={labelStyle}>Full Name</label>
                   <input
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 outline-none transition-all"
-                    placeholder="Enter your name"
+                    className={inputStyle}
+                    placeholder="Enter your legal name"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                   />
                 </div>
 
+                {/* EDUCATION SELECT - ADDED BACK HERE */}
                 <div>
-                  <label className="text-[11px] font-bold text-slate-500 ml-1 mb-1 block uppercase">
-                    Experience / CV
-                  </label>
+                  <label className={labelStyle}>Highest Education Level</label>
+                  <select
+                    className={inputStyle}
+                    value={form.education}
+                    onChange={(e) =>
+                      setForm({ ...form, education: e.target.value })
+                    }>
+                    <option value="form4">Form 4 / High School</option>
+                    <option value="diploma">Diploma</option>
+                    <option value="degree">Undergraduate Degree</option>
+                    <option value="masters">Master's Degree</option>
+                    <option value="phd">PhD / Doctorate</option>
+                  </select>
+                </div>
+
+                {/* CV TEXTAREA */}
+                <div>
+                  <label className={labelStyle}>Curriculum Vitae (Text)</label>
                   <textarea
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 h-32 resize-none outline-none focus:border-indigo-600 transition-all"
-                    placeholder="Paste your CV or experience summary..."
+                    className={`${inputStyle} h-28 resize-none`}
+                    placeholder="Paste your professional experience here..."
                     value={form.cvText}
                     onChange={(e) =>
                       setForm({ ...form, cvText: e.target.value })
@@ -214,9 +270,22 @@ const JobDetails = () => {
                   />
                 </div>
 
+                {/* COVER LETTER TEXTAREA */}
+                <div>
+                  <label className={labelStyle}>Cover Letter</label>
+                  <textarea
+                    className={`${inputStyle} h-28 resize-none`}
+                    placeholder="Briefly explain why you're a good fit..."
+                    value={form.coverLetter}
+                    onChange={(e) =>
+                      setForm({ ...form, coverLetter: e.target.value })
+                    }
+                  />
+                </div>
+
                 <button
                   onClick={handleApply}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-xl shadow-lg shadow-indigo-200 transition-all active:scale-[0.98] mt-2 uppercase tracking-widest text-xs">
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-2xl shadow-lg shadow-indigo-200 transition-all active:scale-[0.98] mt-2 uppercase tracking-widest text-xs">
                   Submit Application
                 </button>
               </div>
@@ -225,7 +294,6 @@ const JobDetails = () => {
         </div>
       </div>
 
-      {/* Notification Toast */}
       <div className="fixed bottom-8 right-8 z-[100]">
         <AnimatePresence>
           {toast && (
@@ -240,5 +308,6 @@ const JobDetails = () => {
     </div>
   );
 };
+
 
 export default JobDetails;
