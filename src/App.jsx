@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import EmployerDashboard from "./pages/EmployerDashboard";
@@ -16,15 +15,35 @@ import Contact from "./pages/Contact";
 
 function App() {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // 🔹 Load user from localStorage on app start
+  // 1. Load user from localStorage on app start
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error("Error parsing user from storage", error);
+      }
+    }
+    setLoading(false);
   }, []);
+
+  // 2. Sync user state to localStorage whenever it changes
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
+    } else {
+      localStorage.removeItem("user");
+    }
+  }, [user]);
+
+  if (loading) return null; // Prevents navbar flicker on refresh
 
   return (
     <BrowserRouter>
+      {/* Navbar is correctly placed inside BrowserRouter */}
       <Navbar user={user} setUser={setUser} />
 
       <Routes>
@@ -38,9 +57,11 @@ function App() {
         <Route
           path="/employer-dashboard"
           element={
-            user && user.role === "employer"
-              ? <EmployerDashboard user={user} />
-              : <Login setUser={setUser} />
+            user && user.role === "employer" ? (
+              <EmployerDashboard user={user} />
+            ) : (
+              <Navigate to="/login" />
+            )
           }
         />
 
@@ -48,24 +69,31 @@ function App() {
         <Route
           path="/jobseeker-dashboard"
           element={
-            user && user.role === "job_seeker"
-              ? <JobSeekerDashboard user={user} />
-              : <Login setUser={setUser} />
+            user && user.role === "job_seeker" ? (
+              <JobSeekerDashboard user={user} />
+            ) : (
+              <Navigate to="/login" />
+            )
           }
         />
 
         <Route path="/jobs/:id" element={<JobDetails />} />
+
         <Route
           path="/employer/applications"
           element={
-            user && user.role === "employer"
-              ? <EmployerApplications />
-              : <Login setUser={setUser} />
+            user && user.role === "employer" ? (
+              <EmployerApplications />
+            ) : (
+              <Navigate to="/login" />
+            )
           }
         />
+
+        {/* Catch-all: redirect unknown routes to Home */}
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
-
   );
 }
 
