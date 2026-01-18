@@ -97,25 +97,23 @@ const JobSeekerDashboard = () => {
     }
 
     // Salary filter
-    if (salaryRange) {
-      result = result.filter((job) => {
-        const jobMin = job.salary_min || 0;
-        const jobMax = job.salary_max || 0;
+    // Salary filter (FIXED – overlap logic)
+if (salaryRange) {
+  result = result.filter((job) => {
+    const jobMin = job.salary_min ?? 0;
+    const jobMax = job.salary_max ?? Infinity;
 
-        switch (salaryRange) {
-          case "0-50000":
-            return jobMax <= 50000;
-          case "50001-100000":
-            return jobMin >= 50001 && jobMax <= 100000;
-          case "100001-150000":
-            return jobMin >= 100001 && jobMax <= 150000;
-          case "150000+":
-            return jobMin > 150000;
-          default:
-            return true;
-        }
-      });
+    if (salaryRange === "150000+") {
+      return jobMax >= 150000;
     }
+
+    const [min, max] = salaryRange.split("-").map(Number);
+
+    // Overlapping range logic
+    return jobMax >= min && jobMin <= max;
+  });
+}
+
 
     setFilteredJobs(result);
   }, [searchQuery, filterType, salaryRange, activeTab, bookmarks, jobs]);
