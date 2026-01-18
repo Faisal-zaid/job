@@ -122,7 +122,7 @@ const About = () => {
             </p>
 
             <Link
-              to="/signup"
+              to="/Register"
               className="group flex items-center gap-3 px-10 py-5 bg-white text-slate-900 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-indigo-500 hover:text-white transition-all shadow-xl active:scale-95">
               Get Started Now
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
