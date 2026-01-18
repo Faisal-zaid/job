@@ -1,13 +1,18 @@
 import { useState, useEffect } from "react";
-import SearchBar from "../components/SearchBar";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, Filter, X, ChevronDown, Briefcase } from "lucide-react";
+import JobCard from "../components/JobCard";
 
 const Jobs = () => {
   const [jobs, setJobs] = useState([]);
-  const [filter, setFilter] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [salaryRange, setSalaryRange] = useState("");
+  const [displayJobs, setDisplayJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [search, setSearch] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filter, setFilter] = useState("");
+  const [salaryRange, setSalaryRange] = useState("");
+  const [category, setCategory] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
 
   const fetchJobs = async () => {
     try {
@@ -16,10 +21,13 @@ const Jobs = () => {
       const data = await res.json();
       if (!Array.isArray(data)) throw new Error("Jobs data is not an array");
       setJobs(data);
+      setDisplayJobs(data);
     } catch (err) {
       console.error("Error fetching jobs:", err);
       setError("Could not load jobs. Try again later.");
-      setJobs([]); // fallback empty array
+      setJobs([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -27,57 +35,336 @@ const Jobs = () => {
     fetchJobs();
   }, []);
 
-  const filteredJobs = jobs.filter((job) => {
-    const matchesType =
-      !filter || job.job_type.toLowerCase() === filter.toLowerCase();
-    const matchesSearch =
-      !searchQuery ||
-      job.title.toLowerCase().includes(searchQuery.toLowerCase());
+  useEffect(() => {
+    let result = [...jobs];
 
-    let matchesSalary = true;
-
-    if (salaryRange && job.salary_min != null && job.salary_max != null) {
-      const [min, max] = salaryRange.includes("+")
-        ? [500000, Infinity]
-        : salaryRange.split("-").map(Number);
-
-      matchesSalary = job.salary_min >= min && job.salary_max <= max;
+    // Search filter
+    if (searchQuery) {
+      result = result.filter(
+        (job) =>
+          job.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          job.company?.name
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          job.description?.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
     }
 
-    return matchesType && matchesSearch && matchesSalary;
-  });
+    // Job type filter
+    if (filter) {
+      result = result.filter(
+        (job) => job.job_type?.toLowerCase() === filter.toLowerCase(),
+      );
+    }
+
+    // Category filter
+    if (category) {
+      result = result.filter(
+        (job) => job.category?.toLowerCase() === category.toLowerCase(),
+      );
+    }
+
+    // Salary filter
+    if (salaryRange) {
+      result = result.filter((job) => {
+        const jobMin = job.salary_min || 0;
+        const jobMax = job.salary_max || 0;
+
+        switch (salaryRange) {
+          case "0-50000":
+            return jobMax <= 50000;
+          case "50001-100000":
+            return jobMin >= 50001 && jobMax <= 100000;
+          case "100001-150000":
+            return jobMin >= 100001 && jobMax <= 150000;
+          case "150000+":
+            return jobMin > 150000;
+          default:
+            return true;
+        }
+      });
+    }
+
+    setDisplayJobs(result);
+  }, [searchQuery, filter, salaryRange, category, jobs]);
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setFilter("");
+    setSalaryRange("");
+    setCategory("");
+    setDisplayJobs(jobs);
+  };
+
+  const hasActiveFilters = searchQuery || filter || salaryRange || category;
+
+  const jobTypes = [
+    "Full-time",
+    "Part-time",
+    "Remote",
+    "Contract",
+    "Internship",
+  ];
+  const categories = [
+    "Technology",
+    "Marketing",
+    "Sales",
+    "Design",
+    "Finance",
+    "Healthcare",
+    "Education",
+    "Other",
+  ];
 
   return (
-    <div style={{ padding: "1rem" }}>
-      <h1>Available Jobs</h1>
+    <div className="min-h-screen bg-slate-50 pt-24 pb-12 px-6">
+      <div className="max-w-7xl mx-auto">
+        {/* HEADER */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8">
+          <h1 className="text-4xl font-black text-slate-900 uppercase italic tracking-tight mb-2">
+            Find Your Next <span className="text-indigo-600">Opportunity</span>
+          </h1>
+          <p className="text-slate-500 font-medium">
+            {displayJobs.length} jobs available
+          </p>
+        </motion.div>
 
-      <SearchBar
-        search={searchQuery}
-        setSearch={setSearchQuery}
-        filter={filter}
-        setFilter={setFilter}
-        salaryRange={salaryRange}
-        setSalaryRange={setSalaryRange}
-      />
+        {/* SEARCH AND FILTERS BAR */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white rounded-2xl shadow-lg border border-slate-100 p-4 mb-8">
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Search Input */}
+            <div className="flex-1 relative">
+              <Search
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                size={20}
+              />
+              <input
+                type="text"
+                placeholder="Search by job title, company, or keywords..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-4 text-slate-900 font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 transition-all"
+              />
+            </div>
 
-      {filteredJobs.length === 0 ? (
-        <p>No jobs found</p>
-      ) : (
-        filteredJobs.map((job) => (
-          <div
-            key={job.id}
-            style={{
-              border: "1px solid #ddd",
-              padding: "1rem",
-              marginBottom: "1rem",
-            }}
-          >
-            <h3>{job.title}</h3>
-            <p>{job.description}</p>
-            <small>{job.job_type}</small>
+            {/* Filter Toggle Button */}
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-bold transition-all ${
+                showFilters || hasActiveFilters
+                  ? "bg-indigo-600 text-white"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+              }`}>
+              <Filter size={18} />
+              Filters
+              {hasActiveFilters && (
+                <span className="w-5 h-5 bg-white text-indigo-600 rounded-full text-xs flex items-center justify-center">
+                  {(searchQuery ? 1 : 0) +
+                    (filter ? 1 : 0) +
+                    (salaryRange ? 1 : 0) +
+                    (category ? 1 : 0)}
+                </span>
+              )}
+              <ChevronDown
+                size={16}
+                className={`transition-transform ${showFilters ? "rotate-180" : ""}`}
+              />
+            </button>
           </div>
-        ))
-      )}
+
+          {/* Expandable Filters */}
+          <AnimatePresence>
+            {showFilters && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden">
+                <div className="pt-6 mt-4 border-t border-slate-100 grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {/* Job Type Filter */}
+                  <div>
+                    <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">
+                      Job Type
+                    </label>
+                    <select
+                      value={filter}
+                      onChange={(e) => setFilter(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 transition-all appearance-none">
+                      <option value="">All Types</option>
+                      {jobTypes.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Category Filter */}
+                  <div>
+                    <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">
+                      Category
+                    </label>
+                    <select
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 transition-all appearance-none">
+                      <option value="">All Categories</option>
+                      {categories.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Salary Range Filter */}
+                  <div>
+                    <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">
+                      Salary Range
+                    </label>
+                    <select
+                      value={salaryRange}
+                      onChange={(e) => setSalaryRange(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 transition-all appearance-none">
+                      <option value="">Any Salary</option>
+                      <option value="0-50000">$0 - $50k</option>
+                      <option value="50001-100000">$50k - $100k</option>
+                      <option value="100001-150000">$100k - $150k</option>
+                      <option value="150000+">$150k+</option>
+                    </select>
+                  </div>
+
+                  {/* Clear Filters Button */}
+                  <div className="flex items-end">
+                    <button
+                      onClick={clearFilters}
+                      className="w-full flex items-center justify-center gap-2 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-700 px-4 py-3 rounded-xl font-bold transition-all">
+                      <X size={16} />
+                      Clear All
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Active Filters Tags */}
+        {hasActiveFilters && !showFilters && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-wrap gap-2 mb-6">
+            {searchQuery && (
+              <span className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-sm font-bold">
+                Search: {searchQuery}
+                <button onClick={() => setSearchQuery("")}>
+                  <X size={14} />
+                </button>
+              </span>
+            )}
+            {filter && (
+              <span className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-sm font-bold">
+                {filter}
+                <button onClick={() => setFilter("")}>
+                  <X size={14} />
+                </button>
+              </span>
+            )}
+            {category && (
+              <span className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-sm font-bold">
+                {category}
+                <button onClick={() => setCategory("")}>
+                  <X size={14} />
+                </button>
+              </span>
+            )}
+            {salaryRange && (
+              <span className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg text-sm font-bold">
+                {salaryRange
+                  .replace(/(\d+)-(\d+)/, "$$$1k - $$$2k")
+                  .replace("150000+", "$150k+")}
+                <button onClick={() => setSalaryRange("")}>
+                  <X size={14} />
+                </button>
+              </span>
+            )}
+          </motion.div>
+        )}
+
+        {/* JOBS GRID */}
+        {loading ? (
+          <div className="grid gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div
+                key={i}
+                className="bg-slate-900 rounded-3xl p-8 animate-pulse">
+                <div className="flex gap-5">
+                  <div className="w-14 h-14 bg-slate-700 rounded-2xl" />
+                  <div className="flex-1">
+                    <div className="h-6 bg-slate-700 rounded w-1/3 mb-2" />
+                    <div className="h-4 bg-slate-700 rounded w-1/4" />
+                  </div>
+                </div>
+                <div className="h-4 bg-slate-700 rounded w-full mt-6" />
+                <div className="h-4 bg-slate-700 rounded w-2/3 mt-2" />
+              </div>
+            ))}
+          </div>
+        ) : error ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-20">
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <X className="w-10 h-10 text-red-500" />
+            </div>
+            <h3 className="text-xl font-black text-slate-900 uppercase italic mb-2">
+              Oops!
+            </h3>
+            <p className="text-slate-500 font-medium">{error}</p>
+          </motion.div>
+        ) : displayJobs.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-20 bg-white rounded-3xl border border-slate-100">
+            <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Briefcase className="w-10 h-10 text-slate-400" />
+            </div>
+            <h3 className="text-xl font-black text-slate-900 uppercase italic mb-2">
+              No Jobs Found
+            </h3>
+            <p className="text-slate-500 font-medium mb-6">
+              Try adjusting your search or filters
+            </p>
+            <button
+              onClick={clearFilters}
+              className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all">
+              Clear Filters
+            </button>
+          </motion.div>
+        ) : (
+          <div className="grid gap-6">
+            {displayJobs.map((job, index) => (
+              <motion.div
+                key={job.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}>
+                <JobCard job={job} />
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
