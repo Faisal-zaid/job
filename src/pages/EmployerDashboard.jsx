@@ -229,5 +229,4 @@ function EmployerDashboard() {
     </div>
   );
 }
-
 export default EmployerDashboard;
