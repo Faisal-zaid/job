@@ -1,18 +1,32 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { LogOut, Briefcase, Search, Filter } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  LogOut,
+  Briefcase,
+  Search,
+  Filter,
+  Bookmark,
+  Clock,
+  CheckCircle,
+  TrendingUp,
+  Eye,
+  X,
+} from "lucide-react";
 import JobCard from "../components/JobCard";
-import JobFilter from "../components/JobFilter";
-import SearchBar from "../components/SearchBar";
 
 const JobSeekerDashboard = () => {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
-  const [filterType, setFilterType] = useState(""); // remote/hybrid/physical
-  const [salaryRange, setSalaryRange] = useState(""); // 0-20k etc.
-  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredJobs, setFilteredJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [filterType, setFilterType] = useState("");
+  const [salaryRange, setSalaryRange] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [bookmarks, setBookmarks] = useState([]);
+  const [activeTab, setActiveTab] = useState("all"); // all, bookmarked
 
   const token = localStorage.getItem("token");
 
@@ -27,8 +41,11 @@ const JobSeekerDashboard = () => {
       });
       const data = await res.json();
       setJobs(Array.isArray(data) ? data : []);
+      setFilteredJobs(Array.isArray(data) ? data : []);
     } catch (err) {
       setError("Unable to load jobs.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -36,181 +53,423 @@ const JobSeekerDashboard = () => {
     if (token) fetchJobs();
   }, [token]);
 
+  // Load bookmarks from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("bookmarks");
+    if (saved) setBookmarks(JSON.parse(saved));
+  }, []);
+
   const handleLogout = () => {
     localStorage.clear();
     navigate("/login");
   };
 
-  // ----- FILTER LOGIC -----
-  const filteredJobs = jobs.filter((job) => {
-    const matchesType =
-      !filterType || job.job_type?.toLowerCase() === filterType.toLowerCase();
+  const toggleBookmark = (jobId) => {
+    const newBookmarks = bookmarks.includes(jobId)
+      ? bookmarks.filter((id) => id !== jobId)
+      : [...bookmarks, jobId];
+    setBookmarks(newBookmarks);
+    localStorage.setItem("bookmarks", JSON.stringify(newBookmarks));
+  };
 
-    const matchesSearch =
-      !searchQuery ||
-      job.title?.toLowerCase().includes(searchQuery.toLowerCase());
+  useEffect(() => {
+    let result = jobs;
 
-    const matchesSalary = (() => {
-      if (!salaryRange) return true;
+    // Filter by tab
+    if (activeTab === "bookmarked") {
+      result = result.filter((job) => bookmarks.includes(job.id));
+    }
 
-      const jobMin = job.salary_min || 0;
-      const jobMax = job.salary_max || 0;
+    // Search filter
+    if (searchQuery) {
+      result = result.filter(
+        (job) =>
+          job.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          job.company?.name?.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
+    }
 
-      switch (salaryRange) {
-        case "0-20000":
-          return jobMin <= 20000; // any job starting <= 20k
-        case "20001-50000":
-          return jobMax >= 20001 && jobMin <= 50000; // overlaps
-        case "50001-100000":
-          return jobMax >= 50001 && jobMin <= 100000;
-        case "above100000":
-          return jobMin > 100000;
-        default:
-          return true;
-      }
-    })();
+    // Job type filter
+    if (filterType) {
+      result = result.filter(
+        (job) => job.job_type?.toLowerCase() === filterType.toLowerCase(),
+      );
+    }
 
-    return matchesType && matchesSearch && matchesSalary;
-  });
+    // Salary filter
+    if (salaryRange) {
+      result = result.filter((job) => {
+        const jobMin = job.salary_min || 0;
+        const jobMax = job.salary_max || 0;
+
+        switch (salaryRange) {
+          case "0-50000":
+            return jobMax <= 50000;
+          case "50001-100000":
+            return jobMin >= 50001 && jobMax <= 100000;
+          case "100001-150000":
+            return jobMin >= 100001 && jobMax <= 150000;
+          case "150000+":
+            return jobMin > 150000;
+          default:
+            return true;
+        }
+      });
+    }
+
+    setFilteredJobs(result);
+  }, [searchQuery, filterType, salaryRange, activeTab, bookmarks, jobs]);
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setFilterType("");
+    setSalaryRange("");
+    setActiveTab("all");
+  };
+
+  const hasActiveFilters = searchQuery || filterType || salaryRange;
+
+  const stats = [
+    {
+      icon: Briefcase,
+      label: "Total Jobs",
+      value: jobs.length,
+      color: "bg-blue-500",
+    },
+    {
+      icon: Bookmark,
+      label: "Bookmarked",
+      value: bookmarks.length,
+      color: "bg-amber-500",
+    },
+    { icon: Clock, label: "Applied Today", value: 0, color: "bg-emerald-500" },
+    { icon: TrendingUp, label: "Interviews", value: 0, color: "bg-purple-500" },
+  ];
+
+  const jobTypes = ["remote", "hybrid", "physical"];
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pt-24 pb-12 px-6 md:px-12 lg:px-24 font-sans text-slate-900">
       <div className="max-w-7xl mx-auto relative">
         {/* HEADER */}
-        <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="p-2 bg-indigo-600 rounded-lg">
-                <Briefcase size={20} className="text-white" />
-              </div>
-              <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-                Job<span className="text-indigo-600">Portal</span>
-              </h2>
-            </div>
-            <p className="text-slate-500 text-sm font-medium">
-              {filteredJobs.length} positions available today
+        <header className="mb-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}>
+            <h1 className="text-4xl font-black text-slate-900 uppercase italic tracking-tight mb-2">
+              Job <span className="text-indigo-600">Dashboard</span>
+            </h1>
+            <p className="text-slate-500 font-medium">
+              Welcome back! Find your next opportunity.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="flex items-center gap-3">
-            <div className="w-full md:w-80">
-              <SearchBar onSearch={setSearchQuery} />
-            </div>
-            <button
-              onClick={handleLogout}
-              className="p-3 bg-white border border-slate-200 hover:border-red-200 hover:bg-red-50 text-slate-600 hover:text-red-600 rounded-xl transition-all shadow-sm"
-              title="Sign Out"
-            >
-              <LogOut size={18} />
-            </button>
-          </div>
+          {/* Stats Grid */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+            {stats.map((stat, index) => (
+              <div
+                key={stat.label}
+                className="bg-white rounded-2xl p-5 shadow-lg border border-slate-100 hover:shadow-xl transition-shadow">
+                <div className="flex items-center gap-4">
+                  <div
+                    className={`w-12 h-12 ${stat.color} rounded-xl flex items-center justify-center`}>
+                    <stat.icon className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-black text-slate-900">
+                      {stat.value}
+                    </p>
+                    <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">
+                      {stat.label}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </motion.div>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* SIDEBAR */}
-          <aside className="lg:col-span-1">
-            <div className="sticky top-28 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-              <div className="flex items-center gap-2 mb-6 text-slate-900 font-semibold text-sm border-b border-slate-100 pb-4">
-                <Filter size={16} className="text-indigo-600" />
-                Refine Search
-              </div>
+        {/* TABS */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="flex gap-2 mb-6">
+          <button
+            onClick={() => setActiveTab("all")}
+            className={`px-6 py-3 rounded-xl font-bold transition-all ${
+              activeTab === "all"
+                ? "bg-indigo-600 text-white"
+                : "bg-white text-slate-600 hover:bg-slate-100"
+            }`}>
+            <span className="flex items-center gap-2">
+              <Briefcase size={18} />
+              All Jobs
+              <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs">
+                {jobs.length}
+              </span>
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab("bookmarked")}
+            className={`px-6 py-3 rounded-xl font-bold transition-all ${
+              activeTab === "bookmarked"
+                ? "bg-amber-500 text-white"
+                : "bg-white text-slate-600 hover:bg-slate-100"
+            }`}>
+            <span className="flex items-center gap-2">
+              <Bookmark size={18} />
+              Bookmarked
+              <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs">
+                {bookmarks.length}
+              </span>
+            </span>
+          </button>
+        </motion.div>
 
-              {/* Job Type Filter */}
-              <div className="mb-4">
-                <p className="text-xs font-bold uppercase text-slate-500 mb-2">
-                  Job Type
-                </p>
-                {["remote", "hybrid", "physical"].map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => setFilterType(type)}
-                    className={`mr-2 mb-2 px-3 py-1 text-xs font-bold rounded-lg border ${
-                      filterType === type
-                        ? "bg-indigo-600 text-white border-indigo-600"
-                        : "bg-white text-slate-600 border-slate-200"
-                    }`}
-                  >
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setFilterType("")}
-                  className="mr-2 mb-2 px-3 py-1 text-xs font-bold rounded-lg border bg-slate-100 text-slate-600 border-slate-200"
-                >
-                  Clear
-                </button>
-              </div>
-
-              {/* Salary Filter */}
-              <div>
-                <p className="text-xs font-bold uppercase text-slate-500 mb-2">
-                  Salary Range
-                </p>
-                {[
-                  { label: "0 - 20,000", value: "0-20000" },
-                  { label: "20,001 - 50,000", value: "20001-50000" },
-                  { label: "50,001 - 100,000", value: "50001-100000" },
-                  { label: "Above 100,000", value: "above100000" },
-                ].map((range) => (
-                  <button
-                    key={range.value}
-                    onClick={() => setSalaryRange(range.value)}
-                    className={`mr-2 mb-2 px-3 py-1 text-xs font-bold rounded-lg border ${
-                      salaryRange === range.value
-                        ? "bg-indigo-600 text-white border-indigo-600"
-                        : "bg-white text-slate-600 border-slate-200"
-                    }`}
-                  >
-                    {range.label}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setSalaryRange("")}
-                  className="mr-2 mb-2 px-3 py-1 text-xs font-bold rounded-lg border bg-slate-100 text-slate-600 border-slate-200"
-                >
-                  Clear
-                </button>
-              </div>
+        {/* SEARCH AND FILTERS */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-white rounded-2xl shadow-lg border border-slate-100 p-4 mb-8">
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Search Input */}
+            <div className="flex-1 relative">
+              <Search
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                size={20}
+              />
+              <input
+                type="text"
+                placeholder="Search jobs by title or company..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-4 text-slate-900 font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 transition-all"
+              />
             </div>
-          </aside>
 
-          {/* MAIN CONTENT */}
-          <main className="lg:col-span-3">
-            {error && (
-              <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-6 text-sm font-medium border border-red-100">
-                {error}
-              </div>
-            )}
-
-            <div className="space-y-4">
-              {filteredJobs.length > 0 ? (
-                filteredJobs.map((job) => (
-                  <motion.div
-                    key={job.id}
-                    layout
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    <JobCard
-                      job={{
-                        ...job,
-                        company: job.company || {
-                          name: job.company_name || "Company",
-                        },
-                      }}
-                    />
-                  </motion.div>
-                ))
-              ) : (
-                <div className="py-20 text-center bg-white rounded-3xl border border-slate-200 border-dashed">
-                  <p className="text-slate-400 text-sm font-medium">
-                    No results found.
-                  </p>
-                </div>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-bold transition-all ${
+                showFilters || hasActiveFilters
+                  ? "bg-indigo-600 text-white"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+              }`}>
+              <Filter size={18} />
+              Filters
+              {hasActiveFilters && (
+                <span className="w-5 h-5 bg-white text-indigo-600 rounded-full text-xs flex items-center justify-center">
+                  {(searchQuery ? 1 : 0) +
+                    (filterType ? 1 : 0) +
+                    (salaryRange ? 1 : 0)}
+                </span>
               )}
-            </div>
-          </main>
+            </button>
+          </div>
+
+          {/* Expandable Filters */}
+          <AnimatePresence>
+            {showFilters && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden">
+                <div className="pt-6 mt-4 border-t border-slate-100 grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {/* Job Type Filter */}
+                  <div>
+                    <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">
+                      Job Type
+                    </label>
+                    <select
+                      value={filterType}
+                      onChange={(e) => setFilterType(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 transition-all appearance-none">
+                      <option value="">All Types</option>
+                      {jobTypes.map((type) => (
+                        <option key={type} value={type}>
+                          {type.charAt(0).toUpperCase() + type.slice(1)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Salary Range Filter */}
+                  <div>
+                    <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">
+                      Salary Range
+                    </label>
+                    <select
+                      value={salaryRange}
+                      onChange={(e) => setSalaryRange(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 transition-all appearance-none">
+                      <option value="">Any Salary</option>
+                      <option value="0-50000">$0 - $50k</option>
+                      <option value="50001-100000">$50k - $100k</option>
+                      <option value="100001-150000">$100k - $150k</option>
+                      <option value="150000+">$150k+</option>
+                    </select>
+                  </div>
+
+                  {/* Clear Button */}
+                  <div className="flex items-end">
+                    <button
+                      onClick={clearFilters}
+                      className="w-full flex items-center justify-center gap-2 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-700 px-4 py-3 rounded-xl font-bold transition-all">
+                      <X size={16} />
+                      Clear All
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Active Filters Tags */}
+        {hasActiveFilters && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-wrap gap-2 mb-6">
+            {searchQuery && (
+              <span className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-sm font-bold">
+                {searchQuery}
+                <button onClick={() => setSearchQuery("")}>
+                  <X size={14} />
+                </button>
+              </span>
+            )}
+            {filterType && (
+              <span className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-sm font-bold">
+                {filterType}
+                <button onClick={() => setFilterType("")}>
+                  <X size={14} />
+                </button>
+              </span>
+            )}
+            {salaryRange && (
+              <span className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg text-sm font-bold">
+                {salaryRange
+                  .replace(/(\d+)-(\d+)/, "$$$1k - $$$2k")
+                  .replace("150000+", "$150k+")}
+                <button onClick={() => setSalaryRange("")}>
+                  <X size={14} />
+                </button>
+              </span>
+            )}
+          </motion.div>
+        )}
+
+        {/* RESULTS COUNT */}
+        <div className="mb-6">
+          <p className="text-slate-500 font-medium">
+            {filteredJobs.length} {filteredJobs.length === 1 ? "job" : "jobs"}{" "}
+            found
+          </p>
         </div>
+
+        {/* JOBS LIST */}
+        {loading ? (
+          <div className="grid gap-6">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div
+                key={i}
+                className="bg-slate-900 rounded-3xl p-8 animate-pulse">
+                <div className="flex gap-5">
+                  <div className="w-14 h-14 bg-slate-700 rounded-2xl" />
+                  <div className="flex-1">
+                    <div className="h-6 bg-slate-700 rounded w-1/3 mb-2" />
+                    <div className="h-4 bg-slate-700 rounded w-1/4" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : error ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-20 bg-white rounded-3xl border border-slate-100">
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <X className="w-10 h-10 text-red-500" />
+            </div>
+            <h3 className="text-xl font-black text-slate-900 uppercase italic mb-2">
+              Oops!
+            </h3>
+            <p className="text-slate-500 font-medium">{error}</p>
+          </motion.div>
+        ) : filteredJobs.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-20 bg-white rounded-3xl border border-slate-100">
+            <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Briefcase className="w-10 h-10 text-slate-400" />
+            </div>
+            <h3 className="text-xl font-black text-slate-900 uppercase italic mb-2">
+              No Jobs Found
+            </h3>
+            <p className="text-slate-500 font-medium mb-6">
+              {activeTab === "bookmarked"
+                ? "You haven't bookmarked any jobs yet."
+                : "Try adjusting your search or filters."}
+            </p>
+            <button
+              onClick={clearFilters}
+              className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all">
+              Clear Filters
+            </button>
+          </motion.div>
+        ) : (
+          <div className="space-y-4">
+            {filteredJobs.map((job, index) => (
+              <motion.div
+                key={job.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="relative">
+                <JobCard
+                  job={{
+                    ...job,
+                    company: job.company || {
+                      name: job.company_name || "Company",
+                    },
+                  }}
+                />
+                {/* Bookmark Button */}
+                <button
+                  onClick={() => toggleBookmark(job.id)}
+                  className={`absolute top-6 right-6 p-3 rounded-xl transition-all ${
+                    bookmarks.includes(job.id)
+                      ? "bg-amber-500 text-white"
+                      : "bg-slate-800 text-slate-400 hover:bg-amber-500 hover:text-white"
+                  }`}>
+                  <Bookmark
+                    size={18}
+                    fill={bookmarks.includes(job.id) ? "currentColor" : "none"}
+                  />
+                </button>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {/* Logout Button */}
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          onClick={handleLogout}
+          className="fixed bottom-8 right-8 bg-slate-900 text-white px-6 py-4 rounded-2xl font-bold uppercase text-xs tracking-widest hover:bg-red-600 transition-all shadow-xl flex items-center gap-3">
+          <LogOut size={18} />
+          Sign Out
+        </motion.button>
       </div>
     </div>
   );
