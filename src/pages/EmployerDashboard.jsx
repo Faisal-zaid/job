@@ -210,9 +210,10 @@ const EmployerDashboard = ({ user }) => {
                 </button>
               </div>
 
+              {/* FIXED SALARY DISPLAY */}
               <p className="text-emerald-400 text-sm mt-3 font-semibold">
-                {job.salary_min && job.salary_max
-                  ? `Salary: ${job.salary_min} - ${job.salary_max}`
+                {job.salary_min != null && job.salary_max != null
+                  ? `Salary: ${job.salary_min.toLocaleString()} - ${job.salary_max.toLocaleString()}`
                   : "Salary: Not specified"}
               </p>
 
@@ -265,7 +266,7 @@ const EmployerDashboard = ({ user }) => {
                               rel="noopener noreferrer"
                               className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition"
                             >
-                              
+                              View
                             </a>
                           )}
                         </div>
