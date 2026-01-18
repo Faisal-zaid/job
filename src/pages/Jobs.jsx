@@ -1,20 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Search,
-  Filter,
-  MapPin,
-  Building2,
-  DollarSign,
-  Briefcase,
-  X,
-  ChevronDown,
-} from "lucide-react";
+import { Search, Filter, X, ChevronDown, Briefcase } from "lucide-react";
 import JobCard from "../components/JobCard";
 
 const Jobs = () => {
   const [jobs, setJobs] = useState([]);
-  const [filteredJobs, setFilteredJobs] = useState([]);
+  const [displayJobs, setDisplayJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -30,7 +21,7 @@ const Jobs = () => {
       const data = await res.json();
       if (!Array.isArray(data)) throw new Error("Jobs data is not an array");
       setJobs(data);
-      setFilteredJobs(data);
+      setDisplayJobs(data);
     } catch (err) {
       console.error("Error fetching jobs:", err);
       setError("Could not load jobs. Try again later.");
@@ -45,7 +36,7 @@ const Jobs = () => {
   }, []);
 
   useEffect(() => {
-    let result = jobs;
+    let result = [...jobs];
 
     // Search filter
     if (searchQuery) {
@@ -94,7 +85,7 @@ const Jobs = () => {
       });
     }
 
-    setFilteredJobs(result);
+    setDisplayJobs(result);
   }, [searchQuery, filter, salaryRange, category, jobs]);
 
   const clearFilters = () => {
@@ -102,7 +93,7 @@ const Jobs = () => {
     setFilter("");
     setSalaryRange("");
     setCategory("");
-    setFilteredJobs(jobs);
+    setDisplayJobs(jobs);
   };
 
   const hasActiveFilters = searchQuery || filter || salaryRange || category;
@@ -137,7 +128,7 @@ const Jobs = () => {
             Find Your Next <span className="text-indigo-600">Opportunity</span>
           </h1>
           <p className="text-slate-500 font-medium">
-            {filteredJobs.length} jobs available
+            {displayJobs.length} jobs available
           </p>
         </motion.div>
 
@@ -340,7 +331,7 @@ const Jobs = () => {
             </h3>
             <p className="text-slate-500 font-medium">{error}</p>
           </motion.div>
-        ) : filteredJobs.length === 0 ? (
+        ) : displayJobs.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -362,7 +353,7 @@ const Jobs = () => {
           </motion.div>
         ) : (
           <div className="grid gap-6">
-            {filteredJobs.map((job, index) => (
+            {displayJobs.map((job, index) => (
               <motion.div
                 key={job.id}
                 initial={{ opacity: 0, y: 20 }}
