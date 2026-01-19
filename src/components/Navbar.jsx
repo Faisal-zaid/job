@@ -8,7 +8,6 @@ const Navbar = ({ user, setUser }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Check if we're on home page for special styling
   const isHomePage = location.pathname === "/";
 
   useEffect(() => {
@@ -18,11 +17,7 @@ const Navbar = ({ user, setUser }) => {
   }, []);
 
   useEffect(() => {
-    if (isMenuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
+    document.body.style.overflow = isMenuOpen ? "hidden" : "unset";
   }, [isMenuOpen]);
 
   const handleLogout = () => {
@@ -35,33 +30,24 @@ const Navbar = ({ user, setUser }) => {
 
   const closeMenu = () => setIsMenuOpen(false);
 
-  // --- STYLE CALCULATIONS (Order Matters!) ---
-
+  // --- STYLE CALCULATIONS ---
   const navBgClass = isHomePage
     ? isScrolled
       ? "bg-white shadow-lg"
       : "bg-transparent"
     : "bg-white shadow-lg";
-
   const navTextClass = isHomePage
     ? isScrolled
       ? "text-gray-800"
       : "text-white drop-shadow-md"
     : "text-gray-800";
-
-  const navBorderClass =
-    isHomePage && !isScrolled ? "" : "border-b border-gray-100";
-
   const logoColorClass = isHomePage
     ? isScrolled
       ? "text-blue-700"
       : "text-white drop-shadow-lg"
     : "text-blue-700";
 
-  // FIX: Define navTextColor BEFORE using it in linkStyles
-  const navTextColor = navTextClass;
-
-  const linkStyles = `relative group ${navTextColor} font-semibold transition-all duration-300 
+  const linkStyles = `relative group ${navTextClass} font-semibold transition-all duration-300 
     after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-[2px] 
     after:bottom-[-4px] after:left-0 after:origin-center 
     ${isScrolled || !isHomePage ? "after:bg-blue-600" : "after:bg-white"} 
@@ -69,21 +55,19 @@ const Navbar = ({ user, setUser }) => {
 
   return (
     <>
-      {/* 1. MOBILE OVERLAY */}
+      {/* MOBILE OVERLAY */}
       <div
-        className={`fixed inset-0 bg-black/60 z-[80] transition-opacity duration-300 md:hidden ${
-          isMenuOpen ? "opacity-100 visible" : "opacity-0 invisible"
-        }`}
+        className={`fixed inset-0 bg-black/60 z-[80] md:hidden transition-all ${isMenuOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
         onClick={closeMenu}
       />
 
       <nav
-        className={`fixed top-0 left-0 right-0 z-[90] px-6 md:px-10 py-3 md:py-4 flex items-center justify-between transition-all duration-500 ${navBgClass} ${navBorderClass}`}>
+        className={`fixed top-0 left-0 right-0 z-[90] px-6 md:px-10 py-3 md:py-4 flex items-center justify-between transition-all duration-500 ${navBgClass} ${!isHomePage || isScrolled ? "border-b border-gray-100" : ""}`}>
         {/* LOGO */}
         <Link
           to="/"
           onClick={closeMenu}
-          className={`text-xl md:text-2xl font-black tracking-tighter z-[100] transition-all duration-500 ${logoColorClass}`}>
+          className={`text-xl md:text-2xl font-black tracking-tighter z-[100] ${logoColorClass}`}>
           JOBS<span className="text-indigo-500">CONNECT</span>
         </Link>
 
@@ -98,26 +82,35 @@ const Navbar = ({ user, setUser }) => {
           <Link to="/about" className={linkStyles}>
             About
           </Link>
-          <Link to="/contact" className={linkStyles}>
-            Contact
-          </Link>
 
           {user ? (
-            <div className="flex items-center space-x-4 ml-4">
+            <div className="flex items-center space-x-6 ml-4 border-l pl-6 border-gray-200">
+              {/* DISPLAY USERNAME HERE */}
+              <div className="flex flex-col items-end">
+                <span
+                  className={`text-[10px] font-black uppercase tracking-widest ${isHomePage && !isScrolled ? "text-white/70" : "text-gray-400"}`}>
+                  Welcome back,
+                </span>
+                <span className={`text-sm font-bold ${navTextClass}`}>
+                  {user.name.split(" ")[0]} {/* Shows first name */}
+                </span>
+              </div>
+
               <Link
                 to={
                   user.role === "employer"
                     ? "/employer-dashboard"
                     : "/jobseeker-dashboard"
                 }
-                className={`flex items-center gap-2 ${linkStyles}`}>
-                <User size={18} />
-                <span>Dashboard</span>
+                className="bg-indigo-50 text-indigo-600 p-2 rounded-full hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                title="Dashboard">
+                <User size={20} />
               </Link>
+
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-full font-bold hover:bg-red-600 shadow-sm transition-all">
-                <LogOut size={18} />
+                className="bg-red-500 text-white px-5 py-2 rounded-xl font-bold hover:bg-red-600 shadow-lg shadow-red-500/20 transition-all flex items-center gap-2 text-sm">
+                <LogOut size={16} />
                 Logout
               </button>
             </div>
@@ -128,61 +121,62 @@ const Navbar = ({ user, setUser }) => {
               </Link>
               <Link
                 to="/register"
-                className="bg-indigo-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-indigo-700 shadow-lg transition-all">
+                className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition-all">
                 Register
               </Link>
             </div>
           )}
         </div>
 
-        {/* MOBILE HAMBURGER TOGGLE */}
+        {/* MOBILE TOGGLE */}
         <button
-          className="md:hidden z-[100] p-2 focus:outline-none"
+          className="md:hidden z-[100] p-2"
           onClick={() => setIsMenuOpen(!isMenuOpen)}>
           {isMenuOpen ? (
-            <X className="text-gray-800 w-8 h-8" />
+            <X className="text-gray-800" size={32} />
           ) : (
             <Menu
-              className={`${isScrolled || !isHomePage ? "text-gray-800" : "text-white"} w-8 h-8`}
+              className={
+                isScrolled || !isHomePage ? "text-gray-800" : "text-white"
+              }
+              size={32}
             />
           )}
         </button>
 
-        {/* 2. MOBILE DRAWER */}
+        {/* MOBILE DRAWER */}
         <div
-          className={`fixed top-0 right-0 h-screen w-[80%] max-w-sm bg-white z-[100] shadow-2xl p-8 flex flex-col transform transition-transform duration-500 ease-in-out md:hidden ${
-            isMenuOpen ? "translate-x-0" : "translate-x-full"
-          }`}
-          onClick={(e) => e.stopPropagation()}>
-          <div className="mt-20 flex flex-col space-y-6">
+          className={`fixed top-0 right-0 h-screen w-[85%] max-w-sm bg-white z-[100] p-8 flex flex-col transform transition-transform duration-500 ${isMenuOpen ? "translate-x-0" : "translate-x-full"}`}>
+          <div className="mt-16 flex flex-col space-y-6">
+            {/* Mobile User Header */}
+            {user && (
+              <div className="bg-indigo-50 p-6 rounded-2xl mb-4">
+                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-1">
+                  Signed in as
+                </p>
+                <p className="text-xl font-black text-slate-900 italic uppercase">
+                  {user.name}
+                </p>
+                <p className="text-xs font-bold text-indigo-600/60 mt-1">
+                  {user.email}
+                </p>
+              </div>
+            )}
+
             <Link
               to="/"
               onClick={closeMenu}
-              className="text-2xl font-bold text-gray-800 border-b pb-2 flex items-center gap-3">
-              <Briefcase size={24} className="text-indigo-600" />
-              Home
+              className="text-xl font-bold text-gray-800 flex items-center gap-4">
+              <Briefcase size={20} className="text-indigo-600" /> Home
             </Link>
             <Link
               to="/jobs"
               onClick={closeMenu}
-              className="text-2xl font-bold text-gray-800 border-b pb-2 flex items-center gap-3">
-              <Briefcase size={24} className="text-indigo-600" />
+              className="text-xl font-bold text-gray-800">
               Browse Jobs
             </Link>
-            <Link
-              to="/about"
-              onClick={closeMenu}
-              className="text-2xl font-bold text-gray-800 border-b pb-2">
-              About
-            </Link>
-            <Link
-              to="/contact"
-              onClick={closeMenu}
-              className="text-2xl font-bold text-gray-800 border-b pb-2">
-              Contact
-            </Link>
 
-            <div className="h-[1px] bg-gray-100 w-full my-2" />
+            <div className="h-[1px] bg-gray-100 w-full" />
 
             {user ? (
               <>
@@ -193,15 +187,13 @@ const Navbar = ({ user, setUser }) => {
                       : "/jobseeker-dashboard"
                   }
                   onClick={closeMenu}
-                  className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-                  <User size={24} className="text-indigo-600" />
-                  Dashboard
+                  className="text-xl font-bold text-gray-800 flex items-center gap-4">
+                  <User size={20} className="text-indigo-600" /> Dashboard
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="text-left text-2xl font-bold text-red-500 flex items-center gap-3">
-                  <LogOut size={24} />
-                  Logout
+                  className="text-left text-xl font-bold text-red-500 flex items-center gap-4 pt-4">
+                  <LogOut size={20} /> Logout
                 </button>
               </>
             ) : (
@@ -209,13 +201,13 @@ const Navbar = ({ user, setUser }) => {
                 <Link
                   to="/login"
                   onClick={closeMenu}
-                  className="text-2xl font-bold text-gray-800">
+                  className="text-xl font-bold text-gray-800">
                   Login
                 </Link>
                 <Link
                   to="/register"
                   onClick={closeMenu}
-                  className="bg-indigo-600 text-white text-center py-4 rounded-xl font-bold shadow-lg">
+                  className="bg-indigo-600 text-white text-center py-4 rounded-xl font-bold shadow-lg shadow-indigo-600/20">
                   Create Account
                 </Link>
               </div>
