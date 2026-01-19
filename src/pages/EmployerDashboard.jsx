@@ -268,6 +268,8 @@ const EmployerDashboard = ({ user }) => {
                           <Users size={18} /> Candidate Applications
                         </h4>
 
+
+
                         {applications.filter((a) => a.job_id === job.id)
                           .length === 0 ? (
                           <p className="text-slate-500 italic text-sm">
@@ -301,6 +303,8 @@ const EmployerDashboard = ({ user }) => {
                                     </div>
                                   </div>
                                 </div>
+
+
 
                                 {/* --- MIRRORED DOCUMENTS SECTION --- */}
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
