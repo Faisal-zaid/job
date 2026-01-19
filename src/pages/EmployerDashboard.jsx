@@ -17,6 +17,7 @@ import {
   Globe,
   Phone,
   DollarSign,
+  GraduationCap,
 } from "lucide-react";
 
 const EmployerDashboard = ({ user }) => {
@@ -29,7 +30,7 @@ const EmployerDashboard = ({ user }) => {
     title: "",
     description: "",
     job_type: "remote",
-    education: "form4",
+    education: "degree",
     company_name: "",
     salary_min: "",
     salary_max: "",
@@ -96,7 +97,7 @@ const EmployerDashboard = ({ user }) => {
           title: "",
           description: "",
           job_type: "remote",
-          education: "form4",
+          education: "degree",
           company_name: "",
           salary_min: "",
           salary_max: "",
@@ -145,28 +146,84 @@ const EmployerDashboard = ({ user }) => {
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden mb-12">
               <div className="bg-slate-800 border border-white/10 p-8 rounded-[32px] shadow-2xl space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {/* Job Title */}
+                  <div className="space-y-2 lg:col-span-2">
                     <label className="text-[10px] font-black uppercase text-slate-500 ml-1">
                       Job Title *
                     </label>
                     <input
-                      className="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl focus:border-indigo-500 outline-none"
+                      className="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl focus:border-indigo-500 outline-none transition-all"
+                      placeholder="e.g. Senior Software Engineer"
                       value={form.title}
                       onChange={(e) =>
                         setForm({ ...form, title: e.target.value })
                       }
                     />
                   </div>
-                  <div className="space-y-2">
+
+                  {/* Company Name */}
+                  <div className="space-y-2 lg:col-span-1">
                     <label className="text-[10px] font-black uppercase text-slate-500 ml-1">
-                      Company Name *
+                      Company *
                     </label>
                     <input
                       className="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl focus:border-indigo-500 outline-none"
                       value={form.company_name}
                       onChange={(e) =>
                         setForm({ ...form, company_name: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  {/* Job Type Selection */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-slate-500 ml-1">
+                      Work Type
+                    </label>
+                    <select
+                      className="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl focus:border-indigo-500 outline-none appearance-none cursor-pointer"
+                      value={form.job_type}
+                      onChange={(e) =>
+                        setForm({ ...form, job_type: e.target.value })
+                      }>
+                      <option value="remote">Remote</option>
+                      <option value="hybrid">Hybrid</option>
+                      <option value="physical">Physical (On-site)</option>
+                    </select>
+                  </div>
+
+                  {/* Education Requirement */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-slate-500 ml-1">
+                      Education Req.
+                    </label>
+                    <select
+                      className="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl focus:border-indigo-500 outline-none appearance-none cursor-pointer"
+                      value={form.education}
+                      onChange={(e) =>
+                        setForm({ ...form, education: e.target.value })
+                      }>
+                      <option value="form4">Form 4 (KCSE)</option>
+                      <option value="certificate">Certificate</option>
+                      <option value="diploma">Diploma</option>
+                      <option value="degree">Bachelor's Degree</option>
+                      <option value="masters">Master's Degree</option>
+                      <option value="phd">PhD</option>
+                    </select>
+                  </div>
+
+                  {/* Location (Only if not remote) */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-slate-500 ml-1">
+                      Location / City
+                    </label>
+                    <input
+                      className="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl focus:border-indigo-500 outline-none"
+                      placeholder="e.g. Nairobi, Kenya"
+                      value={form.location}
+                      onChange={(e) =>
+                        setForm({ ...form, location: e.target.value })
                       }
                     />
                   </div>
@@ -199,12 +256,13 @@ const EmployerDashboard = ({ user }) => {
                     />
                   </div>
 
-                  <div className="space-y-2 md:col-span-2">
+                  {/* Job Description */}
+                  <div className="space-y-2 md:col-span-2 lg:col-span-3">
                     <label className="text-[10px] font-black uppercase text-slate-500 ml-1">
                       Job Description *
                     </label>
                     <textarea
-                      className="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl h-32 focus:border-indigo-500 outline-none"
+                      className="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl h-32 focus:border-indigo-500 outline-none resize-none"
                       value={form.description}
                       onChange={(e) =>
                         setForm({ ...form, description: e.target.value })
@@ -214,7 +272,7 @@ const EmployerDashboard = ({ user }) => {
                 </div>
                 <button
                   onClick={handleAddJob}
-                  className="bg-indigo-600 px-8 py-4 rounded-xl font-black uppercase text-xs flex items-center gap-2">
+                  className="bg-indigo-600 hover:bg-indigo-500 px-8 py-4 rounded-xl font-black uppercase text-xs flex items-center gap-2 transition-all">
                   <Check size={18} /> Publish Vacancy
                 </button>
               </div>
@@ -227,18 +285,27 @@ const EmployerDashboard = ({ user }) => {
           {jobs.map((job) => (
             <div
               key={job.id}
-              className="bg-slate-800/40 border border-white/5 rounded-[40px] overflow-hidden">
+              className="bg-slate-800/40 border border-white/5 rounded-[40px] overflow-hidden shadow-xl">
               <div
                 className="p-8 cursor-pointer"
                 onClick={() => toggleExpanded(job.id)}>
                 <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="text-2xl font-black uppercase italic text-white">
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <span
+                        className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${job.job_type === "remote" ? "bg-purple-500/20 text-purple-400" : "bg-blue-500/20 text-blue-400"}`}>
+                        {job.job_type}
+                      </span>
+                    </div>
+                    <h3 className="text-2xl font-black uppercase italic text-white leading-none">
                       {job.title}
                     </h3>
-                    <div className="flex gap-4 mt-2 font-bold text-slate-500 text-xs uppercase">
+                    <div className="flex flex-wrap gap-4 font-bold text-slate-500 text-xs uppercase">
                       <span className="flex items-center gap-1">
                         <Building2 size={14} /> {job.company_name}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MapPin size={14} /> {job.location || "Remote"}
                       </span>
                       <span className="flex items-center gap-1 text-emerald-400">
                         <DollarSign size={14} />{" "}
@@ -262,17 +329,39 @@ const EmployerDashboard = ({ user }) => {
                     exit={{ height: 0, opacity: 0 }}
                     className="border-t border-white/5 overflow-hidden">
                     <div className="p-8 space-y-10">
+                      {/* Job Info Summary */}
+                      <div className="bg-slate-900/40 p-6 rounded-3xl border border-white/5">
+                        <h4 className="text-[10px] font-black uppercase text-slate-500 mb-3 tracking-widest">
+                          Requirements & Description
+                        </h4>
+                        <div className="flex gap-6 mb-4">
+                          <div className="flex items-center gap-2 text-xs font-bold uppercase">
+                            <GraduationCap
+                              size={16}
+                              className="text-indigo-400"
+                            />{" "}
+                            {job.education}
+                          </div>
+                        </div>
+                        <p className="text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">
+                          {job.description}
+                        </p>
+                      </div>
+
                       {/* Detailed Applicants Container */}
                       <div className="space-y-6">
                         <h4 className="text-indigo-400 font-black uppercase text-xs tracking-[0.2em] flex items-center gap-2">
-                          <Users size={18} /> Candidate Applications
+                          <Users size={18} /> Candidate Applications (
+                          {
+                            applications.filter((a) => a.job_id === job.id)
+                              .length
+                          }
+                          )
                         </h4>
-
-
 
                         {applications.filter((a) => a.job_id === job.id)
                           .length === 0 ? (
-                          <p className="text-slate-500 italic text-sm">
+                          <p className="text-slate-500 italic text-sm py-4">
                             No applications for this role yet.
                           </p>
                         ) : (
@@ -284,7 +373,7 @@ const EmployerDashboard = ({ user }) => {
                                 className="bg-slate-900/60 rounded-[32px] p-8 border border-white/5 shadow-inner space-y-6">
                                 <div className="flex justify-between items-start">
                                   <div>
-                                    <h5 className="text-xl font-black text-white italic uppercase">
+                                    <h5 className="text-xl font-black text-white italic uppercase tracking-tight">
                                       {app.applicant_name}
                                     </h5>
                                     <div className="flex gap-4 mt-2 text-[10px] font-black uppercase text-slate-400">
@@ -304,11 +393,7 @@ const EmployerDashboard = ({ user }) => {
                                   </div>
                                 </div>
 
-
-
-                                {/* --- MIRRORED DOCUMENTS SECTION --- */}
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                  {/* CV MIRROR BOX */}
                                   <div className="space-y-3">
                                     <label className="text-[10px] font-black text-slate-500 uppercase flex items-center gap-2 ml-1">
                                       <FileText
@@ -327,7 +412,6 @@ const EmployerDashboard = ({ user }) => {
                                     </div>
                                   </div>
 
-                                  {/* COVER LETTER MIRROR BOX */}
                                   <div className="space-y-3">
                                     <label className="text-[10px] font-black text-slate-500 uppercase flex items-center gap-2 ml-1">
                                       <Mail
