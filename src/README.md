@@ -45,4 +45,4 @@ https://github.com/Faisal-zaid
 
 # License
 
-The content of this frontend code challenge is licensed under the Moringa School.
+The content of this frontend project is licensed under the Moringa School.
