@@ -262,4 +262,5 @@ const FormInput = React.forwardRef(
   ),
 );
 
+
 export default Register;
