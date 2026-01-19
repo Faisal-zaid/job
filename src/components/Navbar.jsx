@@ -163,7 +163,7 @@ const Navbar = ({ user, setUser }) => {
               Home
             </Link>
             <Link
-              to="/jobs"
+              to="/Jobs"
               onClick={closeMenu}
               className="text-2xl font-bold text-gray-800 border-b pb-2 flex items-center gap-3">
               <Briefcase size={24} className="text-indigo-600" />
