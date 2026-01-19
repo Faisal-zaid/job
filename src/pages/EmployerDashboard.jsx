@@ -190,7 +190,7 @@ const EmployerDashboard = ({ user }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white pt-24 pb-12 px-6 md:px-12 lg:px-24">
+    <div className="min-h-screen bg-slate-800 text-white pt-24 pb-12 px-6 md:px-12 lg:px-24">
       <div className="max-w-7xl mx-auto">
         {/* HEADER */}
         <motion.div

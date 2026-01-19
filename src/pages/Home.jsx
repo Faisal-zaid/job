@@ -69,7 +69,7 @@ function Home() {
             className="max-w-3xl">
             <span className="inline-flex items-center gap-2 bg-indigo-600/20 text-indigo-400 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest mb-6">
               <TrendingUp size={14} />
-              #1 Job Platform in 2025
+              #1 Job Platform in 2026
             </span>
 
             <h1 className="text-5xl md:text-7xl font-black text-white uppercase italic tracking-tighter leading-none mb-6">
