@@ -25,7 +25,7 @@ const EmployerApplications = () => {
 
   const fetchApplications = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:5000/employer/applications", {
+      const res = await fetch("https://backend-jobs-w76c.onrender.com/employer/applications", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
