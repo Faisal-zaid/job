@@ -23,7 +23,7 @@ function Home() {
   useEffect(() => {
     const fetchRecentJobs = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:5000/jobs");
+        const res = await fetch("https://backend-jobs-w76c.onrender.com/jobs");
         const data = await res.json();
         if (Array.isArray(data)) {
           // Get only the 3 most recent jobs
