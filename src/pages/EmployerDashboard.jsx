@@ -40,14 +40,14 @@ const EmployerDashboard = ({ user }) => {
   /* ---------------- FETCH DATA ---------------- */
 
   const fetchJobs = async () => {
-    const res = await fetch("http://127.0.0.1:5000/jobs", {
+    const res = await fetch("https://backend-jobs-w76c.onrender.com/jobs", {
       headers: { Authorization: `Bearer ${token}` },
     });
     setJobs(await res.json());
   };
 
   const fetchApplications = async () => {
-    const res = await fetch("http://127.0.0.1:5000/employer/applications", {
+    const res = await fetch("https://backend-jobs-w76c.onrender.com/employer/applications", {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
@@ -62,7 +62,7 @@ const EmployerDashboard = ({ user }) => {
   /* ---------------- ACTIONS ---------------- */
 
   const handleAddJob = async () => {
-    const res = await fetch("http://127.0.0.1:5000/jobs", {
+    const res = await fetch("https://backend-jobs-w76c.onrender.com/jobs", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -95,7 +95,7 @@ const EmployerDashboard = ({ user }) => {
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this job?")) return;
-    await fetch(`http://127.0.0.1:5000/jobs/${id}`, {
+    await fetch(`https://backend-jobs-w76c.onrender.com/jobs/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });

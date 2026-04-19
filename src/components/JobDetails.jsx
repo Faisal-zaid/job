@@ -19,7 +19,7 @@ const JobDetails = () => {
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const res = await fetch(`http://127.0.0.1:5000/jobs/${id}`, {
+        const res = await fetch(`https://backend-jobs-w76c.onrender.com/jobs/${id}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         if (!res.ok) throw new Error("Failed to load job");
@@ -47,7 +47,7 @@ const JobDetails = () => {
     }
 
     try {
-      const res = await fetch("http://127.0.0.1:5000/applications", {
+      const res = await fetch("https://backend-jobs-w76c.onrender.com/applications", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

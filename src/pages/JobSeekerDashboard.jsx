@@ -36,7 +36,7 @@ const JobSeekerDashboard = () => {
 
   const fetchJobs = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:5000/jobs", {
+      const res = await fetch("https://backend-jobs-w76c.onrender.com/jobs", {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       const data = await res.json();
