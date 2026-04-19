@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import EmployerDashboard from "./pages/EmployerDashboard";
@@ -42,7 +42,7 @@ function App() {
   if (loading) return null; // Prevents navbar flicker on refresh
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       {/* Navbar is correctly placed inside BrowserRouter */}
       <Navbar user={user} setUser={setUser} />
 
@@ -93,7 +93,7 @@ function App() {
         {/* Catch-all: redirect unknown routes to Home */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
